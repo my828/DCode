@@ -5,10 +5,6 @@ Programming often requires brainstorming, drawing out algorithms, and visualizin
 The client-facing DCode platform will be similar to Codeshare or Coderpad but it also has a built-in canvas for users to write/draw scratch work. The right half of the screen will be a code editor while the left half would have the empty canvas. Both the code editor and the canvas will support real-time collaboration among multiple users.
 ## Architecture
 ## User Stories
-<style>
-  tr:nth-child(even) {background-color: #f2f2f2;
-  color: #696969;}
-</style>
 <table>
   <tr>
     <th>Priority</th>
@@ -53,8 +49,9 @@ The client-facing DCode platform will be similar to Codeshare or Coderpad but it
     <td>Upon receiving a PATCH request to v1/pages/{pageID}/settings endpoint, the server stores the settings in the database.</td>
   </tr>
 </table>
-## API Reference
 
+
+## API Reference
 **POST /v1/pages**
 
 Creates a new page with a unique URL and responds with the DCode page object. The request body is type `application/json`
