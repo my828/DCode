@@ -55,33 +55,32 @@ The client-facing DCode platform will be similar to Codeshare or Coderpad but it
 **POST /v1/pages**
 
 Creates a new page with a unique URL and responds with the DCode page object. The request body is type `application/json`
-- **201**: Successfully created page.
-- **404**: DCode page with unique ID does not exist.
+- **201**: Successfully created page. Respond with JSON.
+- **404**: Page not found. Respond with text.
 
 **GET v1/pages/{pageID}**
 
 Request includes the pageID as a query parameter `id`; Responds with figures and code associated with the specific page ID encoded as `application/json`.
-- **200**: status OK.
-- **404**: page not found.
+- **200**: status OK. Respond with JSON.
+- **404**: DCode page with unique ID does not exist. Respond with error text.
 
 **PATCH v1/pages/{pageID}/canvas**
 
 Updates the DCode page with the given ID. The request body should be of type `application/json`, with an `edit` field containing the new `figures` coordinates.
-- **200**: Successfully updated canvas.
-- **404**: Page no longer exists.
+- **200**: Successfully updated canvas. Respond with JSON.
+- **404**: Page no longer exists. Respond with error text.
 
 **DELETE v1/pages/{pageID}/canvas**
 
 Deletes the DCode canvas contents at pageID from the database and responds with a status of 200 and a plain text message: `canvas cleared`
-- **200**: Successfully deleted canvas contents.
-- **404**: Page no longer exists
+- **200**: Successfully deleted canvas contents. Respond with text.
+- **404**: Page no longer exists. Response with text.
 
 **PATCH v1/pages/{pageID}/editor**
 
 Updates existing editor in mongo page object
-- **200**: Successfully applied changes to editor.
-- **404**: Page no longer exists
-Responds with updated text
+- **200**: Successfully applied changes to editor. Respond with JSON.
+- **404**: Page no longer exists. Respond with text.
 
 ## MongoDB Models
 ### Page Schema
