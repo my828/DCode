@@ -4,6 +4,8 @@ Programming often requires brainstorming, drawing out algorithms, and visualizin
 ## What
 The client-facing DCode platform will be similar to Codeshare or Coderpad but it also has a built-in canvas for users to write/draw scratch work. The right half of the screen will be a code editor while the left half would have the empty canvas. Both the code editor and the canvas will support real-time collaboration among multiple users.
 ## Architecture
+<img src="img/architecture.png" alt="alt text" title="Title" />
+
 ## User Stories
 <table>
   <tr>
@@ -84,26 +86,31 @@ Updates existing editor in mongo page object
 
 ## MongoDB Models
 ### Page Schema
-
->{ \_id: Schema.Types.ObjectID,
-Figures: [],
-Code: [],  
-createdAt: Time,  
-lastEdited: Time,  
+```javascript
+{
+  _id: Schema.Types.ObjectID,
+  figures: [],
+  code: [],  
+  createdAt: Time,  
+  lastEdited: Time,  
 }
->
+```
 
 ## Redis Store
 ### Session Store
->type SessionStore struct {  
-	Client,  
-	SessionDuration,
+```javascript
+type SessionStore struct {  
+    Client,  
+	SessionDuration,  
 }
+```
 ### Session State
->type SessionState struct {  
-  SessionBegin,
-  users,
+```javascript
+type SessionState struct {  
+    SessionBegin,  
+    users,  
 }
+```
 
 ### Redis Key Value Pairs
 **Key:** Randomly generated hash which forms the unique link for the page.  
