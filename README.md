@@ -15,38 +15,38 @@ The client-facing DCode platform will be similar to Codeshare or Coderpad but it
   <tr>
     <td>P0</td>
     <td>As a user</td>
+    <td>I want to create a new DCode page.</td>
+    <td>Upon receiving a **POST** request at *v1/pages*, the server will create and return a new DCode page, generate a unique page URL, insert the new page in the DB, create a new Redis session and opens a  new **websocket**.</td>
+  </tr>
+  <tr>
+    <td>P0</td>
+    <td>As a user</td>
     <td>I want to open a DCode page URL shared by peers.</td>
-    <td>Upon receiving a POST request at v1/pages, the server will create and return a new DCode page, generate a unique page URL, insert the new page in the DB, create a new Redis session and opens a  new websocket.</td>
+    <td>Upon receiving a **GET** request to *v1/pages/{pageID}*, the server opens a **websocket** connection, adds the user’s unique identifier to the *Redis session state* and resets the expiration time.</td>
   </tr>
   <tr>
     <td>P0</td>
     <td>As a user</td>
     <td>I want to see real-time updates on my DCode page.</td>
-    <td>Upon receiving a GET request to v1/pages/{pageID}, the server opens a websocket connection, adds the user’s unique identifier to the Redis session state and resets the expiration time.</td>
+    <td>Upon receiving a **GET** request to *v1/pages/{pageID}*, the server opens a websocket connection, adds the user’s unique identifier to the Redis session state and resets the expiration time.</td>
   </tr>
   <tr>
     <td>P0</td>
     <td>As a user</td>
     <td>I want to draw an image on an existing DCode page.</td>
-    <td>Upon receiving a GET request to the v1/pages/{pageID} endpoint, the client opens a websocket connection and  continues to render content updates in real-time.</td>
+    <td>Upon receiving a **PATCH** request to the *v1/pages/{pageID}*, the server updates the page content in the database, and it pushes a new message to the *RabbitMQ*.</td>
   </tr>
   <tr>
     <td>P0</td>
     <td>As a user</td>
     <td>I want to clear the canvas on an existing DCode page.</td>
-    <td>Upon receiving a PATCH request to the v1/pages/{pageID}, the server updates the page content in the database, and it pushes a new message to the RabbitMQ.</td>
+    <td>Upon receiving a **DELETE** request, the server will remove all figures in the database and RabbitMQ </td>
   </tr>
   <tr>
     <td>P1</td>
     <td>As a user</td>
     <td>I would like to choose a programming language for my DCode page.</td>
-    <td>Upon receiving a DELETE request, the server will remove all figures in the database and RabbitMQ.</td>
-  </tr>
-  <tr>
-    <td>P1</td>
-    <td>As a user</td>
-    <td>I would like to have a syntax highlighter for my DCode page.</td>
-    <td>Upon receiving a PATCH request to v1/pages/{pageID}/settings endpoint, the server stores the settings in the database.</td>
+    <td>Upon receiving a **PATCH** request to *v1/pages/{pageID}/settings* endpoint, the server stores the settings in the database.</td>
   </tr>
 </table>
 
