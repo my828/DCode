@@ -1,9 +1,6 @@
 import React from "react";
 import logo from './logo.svg'
 export default class Nav extends React.Component {
-    // constructor(props) {
-    //     super(props);
-    // }
     render() {
         let logostyle = {
             height: "40px",
