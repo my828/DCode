@@ -1,4 +1,5 @@
 import React from "react";
+import Editor from './Editor'
 import Canvas from './Canvas'
 export default class Main extends React.Component {
     constructor(prop) {
@@ -31,8 +32,10 @@ export default class Main extends React.Component {
                         </button>
                     </div>
                 }
-
-                 <Canvas />
+                <div class="d-flex">
+                    <Canvas />
+                    <Editor />
+                </div>
                 
             </div>
         )

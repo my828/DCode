@@ -7,23 +7,24 @@ export default class Canvas extends React.Component {
         this.state = {
             width: 700,
             height: 900,
-            brushRadius: 6
+            brushRadius: 5
           };
     }
 
     componentDidMount() {
          // let's change the color randomly every 2 seconds. fun!
-         window.setInterval(() => {
-            this.setState({
-              color: "#" + Math.floor(Math.random() * 16777215).toString(16)
-            });
-          }, 2000);
-         console.log("did mount")
+        //  window.setInterval(() => {
+        //     this.setState({
+        //       color: "#" + Math.floor(Math.random() * 16777215).toString(16)
+        //     });
+        //   }, 2000);
+        //  console.log("did mount")
     }
+
     render() {
         return (
             <div>
-                <CanvasDraw canvasWidth={this.state.width} canvasHeight={this.state.height} brushRadius={this.state.brushRadius}/>
+                <CanvasDraw canvasWidth={this.state.width} canvasHeight={this.state.height} brushRadius={this.state.brushRadius} onChange={console.log("change")}/>
             </div>
         )
     }

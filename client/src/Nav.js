@@ -4,12 +4,12 @@ export default class Nav extends React.Component {
     render() {
         let logostyle = {
             height: "40px",
-            position: "fixed",
+            position: "relative",
             left: "0"
         }
         let navstyle = {
             backgroundColor: "gay",
-            padding: "25px"
+            padding: "10px"
         }
         return (
             <nav class="navbar navbar-expand-md mb-2 m-0 border-bottom" style={navstyle}>
