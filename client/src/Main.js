@@ -1,5 +1,6 @@
 import React from "react";
-
+import Editor from './Editor'
+import Canvas from './Canvas'
 export default class Main extends React.Component {
     constructor(prop) {
         super(prop)
@@ -15,17 +16,14 @@ export default class Main extends React.Component {
     }
 
     render() {
-        let mainstyle = {
-            position: "relative",
-            top: "300px"
-        }
+
         let font = {
             fontSize: "30px"
         }
         return(
-            <div style={mainstyle}>
+            <div>
                 {
-                    this.state.landing && 
+                    !this.state.landing && 
                     <div>
                         <header><b class="pb-5" style={font}>HELLO WELCOME TO DCODE :)</b></header>
                         <button type="button" class="btn btn-dark p-2" 
@@ -34,20 +32,11 @@ export default class Main extends React.Component {
                         </button>
                     </div>
                 }
-                {
-                    !this.state.landing && 
-                    <div>
-                        <button type="button" class="btn btn-primary p-2" 
-                        onClick={() => this.setState({landing: !this.state.landing})}>
-                            IT WORKS
-                        </button>
-                        <div>
-                        </div>
-                        <div>
-                            
-                        </div>
-                    </div>
-                }
+                <div class="d-flex">
+                    <Canvas />
+                    <Editor />
+                </div>
+                
             </div>
         )
     }
