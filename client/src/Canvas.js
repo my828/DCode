@@ -5,7 +5,7 @@ export default class Canvas extends React.Component {
     constructor(prop) {
         super(prop) 
         this.state = {
-            width: 700,
+            width: window.screen.availWidth / 2 - 80,
             height: 900,
             brushRadius: 5
           };
@@ -22,9 +22,17 @@ export default class Canvas extends React.Component {
     }
 
     render() {
+
         return (
             <div>
-                <CanvasDraw canvasWidth={this.state.width} canvasHeight={this.state.height} brushRadius={this.state.brushRadius} onChange={console.log("change")}/>
+                <button type="button" class="btn btn-danger ml-2" onClick={() => this.saveableCanvas.clear()}>
+                    Clear
+                </button>
+                <button type="button" class="btn btn-secondary ml-3" onClick={() => this.saveableCanvas.undo()}>
+                    Undo
+                </button>
+                <CanvasDraw ref={canvasDraw => (this.saveableCanvas = canvasDraw)} canvasWidth={this.state.width} canvasHeight={this.state.height} 
+                    brushRadius={this.state.brushRadius} onChange={console.log("change")}/>
             </div>
         )
     }
