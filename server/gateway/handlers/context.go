@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"DCode/server/gateway/sessions"
+	"github.com/huibrm/DCode/server/gateway/sessions"
 )
 
 // HandlerContext will be a collection of all the contextual variables that the

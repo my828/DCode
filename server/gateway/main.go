@@ -1,8 +1,8 @@
 package main
 
 import (
-	"DCode/server/gateway/handlers"
-	"DCode/server/gateway/sessions"
+	"github.com/huibrm/DCode/server/gateway/handlers"
+	"github.com/huibrm/DCode/server/gateway/sessions"
 	"log"
 	"net/http"
 	"os"
@@ -40,14 +40,16 @@ func main() {
 
 	context := handlers.NewHandlerContext(signingKey, redisStore)
 	router := mux.NewRouter()
-
+	
 	router.HandleFunc("/dcode", HeartBeatHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
+	// for websocket connections 
+	router.HandleFunc("/dcode/v1/ws", ws.WebSocketConnectionHandler)
 	// @TODO: redirect to microservice
 	router.Handle("/dcode/v1/{pageID}", nil)
-	router.Handle("/dcode/v1/{pageID}/canvas", nil)
-	router.Handle("/dcode/v1/{pageID}/editor", nil)
+	// router.Handle("/dcode/v1/{pageID}/canvas", nil)
+	// router.Handle("/dcode/v1/{pageID}/editor", nil)
 
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)

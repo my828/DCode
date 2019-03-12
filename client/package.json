@@ -8,7 +8,8 @@
     "react-canvas-draw": "^1.0.0",
     "react-dom": "^16.8.4",
     "react-scripts": "^2.1.8",
-    "react-simple-code-editor": "^0.9.3"
+    "react-simple-code-editor": "^0.9.3",
+    "react-websocket": "^2.0.1"
   },
   "scripts": {
     "start": "react-scripts start",

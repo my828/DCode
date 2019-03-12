@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"DCode/server/gateway/sessions"
+	"github.com/huibrm/DCode/server/gateway/sessions"
 	"net/http"
 
 	"github.com/gorilla/mux"
