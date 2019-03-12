@@ -29,6 +29,9 @@ func HeartBeatHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	signingKey := os.Getenv("SIGNINGKEY")
 	gatewayAddress := os.Getenv("GATEWAYADDRESS")
+	if len(gatewayAddress) := 0 {
+		gatewayAddress = ":3000"
+	}
 	// tlsCertificate := os.Getenv("TLSCERT")
 	// tlsKey := os.Getenv("TLSKEY")
 	redisAddress := os.Getenv("REDISADDRESS")
@@ -58,3 +61,4 @@ func main() {
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
+  

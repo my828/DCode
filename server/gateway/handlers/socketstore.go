@@ -16,7 +16,7 @@ type SocketStore struct {
 	Lock sync.Mutex
 }
 type MsgObj struct {
-	SessionID 	   SessionID  `jdon:"sessionId"`
+	SessionID 	   sessions.SessionID  `jdon:"sessionId"`
 	Editor         string     `json:"editor"`
 }
 // Thread-safe method for inserting a connection
@@ -24,16 +24,16 @@ func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) i
 	s.Lock.Lock()
 	// insert socket connection
 	s.Connections[ss.SessionID] = append(s.Connections[ss.SessionID], conn)
-	connID := len(s.Connctions[ss.SessionID])
+	connID := len(s.Connections[ss.SessionID])
 	s.Lock.Unlock()
 	return connID
 }
 
 // Thread-safe method for removing a connection
-func (s *SocketStore) RemoveConnection(ss *SessionState, id int) {
+func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, id int) {
 	s.Lock.Lock()
 	// insert socket connection
-	s.Connections[ss.SessionID] := append(s.Connections[ss.SessionID][:id], s.Connections[ss.SessionID][id+1:]...)
+	s.Connections[sessionID] = append(s.Connections[sessionID][:id], s.Connections[sessionID][id+1:]...)
 	s.Lock.Unlock()
 }
  // fix after Harshitha writes microservice
@@ -52,13 +52,13 @@ func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error{
 	return nil
 }
 
-func (s *SocketStore) WriteToConnections(message []byte, id sessions.SessionID)  {
+func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID, connID int)  {
 	var writeError error;
 	connList := s.Connections[id]
 	for _, conn := range connList {
 		writeError = conn.WriteMessage(websocket.TextMessage, message)
 		if writeError != nil {
-			s.RemoveConnection(id)
+			s.RemoveConnection(sessionID, connID)
 			conn.Close()
 			return
 		}

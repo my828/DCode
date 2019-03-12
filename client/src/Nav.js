@@ -1,5 +1,7 @@
 import React from "react";
 import logo from './logo.svg'
+import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+
 export default class Nav extends React.Component {
     render() {
         let logostyle = {
@@ -12,8 +14,9 @@ export default class Nav extends React.Component {
             padding: "10px"
         }
         return (
-            <nav class="navbar navbar-expand-md mb-2 m-0 border-bottom" style={navstyle}>
-                <img src={logo} class="logo" alt="logo" style={logostyle}/>
+            <nav class="navbar navbar-expand-md mb-2 m-0 border-bottom justify-content-between" style={navstyle}>
+                <Link to="/"><img src={logo} class="logo" alt="logo" style={logostyle} /></Link>
+                <button>Extend Session</button>
             </nav>
         )
     }
