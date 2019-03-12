@@ -14,7 +14,7 @@ class App extends Component {
       <Router>
         <Switch>
             <Route exact path="/" component={Splash}></Route>
-            <Route path="/content" component={Main}></Route>
+            <Route path="/decode/v1/" component={Main}></Route>
         </Switch>
         {/* <div className="App">
           <Nav />

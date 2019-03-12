@@ -10,7 +10,7 @@ export default class Splash extends React.Component {
                     onClick={() => this.setState({landing: !this.state.landing})}>
                     Start DCode
                 </button> */}
-                <Link to="/content"><button type="button" 
+                <Link to="/decode/v1/"><button type="button" 
                         class="btn btn-primary">
                             Start DCode
                         </button>
