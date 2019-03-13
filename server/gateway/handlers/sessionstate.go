@@ -8,4 +8,6 @@ import (
 type SessionState struct {
 	SessionID   sessions.SessionID `json:"sessionID"`
 	ActiveUsers []*string          `json:"activeUsers"`
+	Figures     string
+	Code        string
 }
