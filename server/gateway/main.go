@@ -1,8 +1,8 @@
 package main
 
 import (
-	"DCode/server/gateway/handlers"
-	"DCode/server/gateway/sessions"
+	"github.com/huibrm/DCode/server/gateway/handlers"
+	"github.com/huibrm/DCode/server/gateway/sessions"
 	"log"
 	"net/http"
 	"os"
@@ -29,6 +29,9 @@ func HeartBeatHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	signingKey := os.Getenv("SIGNINGKEY")
 	gatewayAddress := os.Getenv("GATEWAYADDRESS")
+	if len(gatewayAddress) == 0 {
+		gatewayAddress = ":3000"
+	}
 	// tlsCertificate := os.Getenv("TLSCERT")
 	// tlsKey := os.Getenv("TLSKEY")
 	redisAddress := os.Getenv("REDISADDRESS")
@@ -39,15 +42,19 @@ func main() {
 	redisStore := sessions.NewRedisStore(redisDB, time.Hour*48)
 
 	context := handlers.NewHandlerContext(signingKey, redisStore)
+	socketstore := handlers.NewSocketStore() // will this create a new store everytime main runs? not sure if this is the right thing
+	websocket := handlers.NewWebSocket(socketstore,context)
 	router := mux.NewRouter()
-
+	
 	router.HandleFunc("/dcode", HeartBeatHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
+	// for websocket connections 
+	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
 	// @TODO: redirect to microservice
 	router.Handle("/dcode/v1/{pageID}", nil)
-	router.Handle("/dcode/v1/{pageID}/canvas", nil)
-	router.Handle("/dcode/v1/{pageID}/editor", nil)
+	// router.Handle("/dcode/v1/{pageID}/canvas", nil)
+	// router.Handle("/dcode/v1/{pageID}/editor", nil)
 
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)
@@ -56,3 +63,4 @@ func main() {
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
+  

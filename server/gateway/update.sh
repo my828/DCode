@@ -17,7 +17,7 @@ update() {
     docker network create dcodeNetwork
 
     # set environment variables
-    GATEWAYADDRESS=":4000" # change later
+    # GATEWAYADDRESS=":4000" # change later
     MONGOADDRESS=""
     RABBITADDRESS=""
     RABBITHOSTNAME=""

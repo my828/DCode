@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "jquery": "^3.3.1",
     "prismjs": "^1.15.0",
     "react": "^16.8.4",
     "react-canvas-draw": "^1.0.0",
     "react-dom": "^16.8.4",
+    "react-router-dom": "^4.3.1",
     "react-scripts": "^2.1.8",
-    "react-simple-code-editor": "^0.9.3"
+    "react-simple-code-editor": "^0.9.3",
+    "react-socks": "^1.0.1",
+    "typescript": "^3.3.3333"
   },
   "scripts": {
     "start": "react-scripts start",

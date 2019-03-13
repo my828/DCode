@@ -15,7 +15,7 @@ export default class App extends React.Component {
  
   render() {
     return (
-      <Editor
+          <Editor
         value={this.state.code}
         onValueChange={code => this.setState({ code })}
         highlight={code => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
