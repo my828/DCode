@@ -15,13 +15,26 @@ type SocketStore struct {
 	Connections map[sessions.SessionID][]*websocket.Conn
 	Lock sync.Mutex
 }
-// NewSocketStore makes a new map and mutex to safely store websockets
+/// for test
+// type SocketStore struct {
+// 	Connections []*websocket.Conn
+// 	Lock sync.Mutex
+// }
+
+//NewSocketStore makes a new map and mutex to safely store websockets
 func NewSocketStore() *SocketStore{
 	return &SocketStore{ 
 		make(map[sessions.SessionID][]*websocket.Conn),
 		sync.Mutex{},
 	}
 }
+// // FOR TEST
+// func NewSocketStore() *SocketStore{
+// 	return &SocketStore{ 
+// 		[]*websocket.Conn{},
+// 		sync.Mutex{},
+// 	}
+// }
 type MsgObj struct {
 	SessionID 	   sessions.SessionID  `jdon:"sessionId"`
 	Editor         string     `json:"editor"`
@@ -34,6 +47,14 @@ func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) {
 	s.Lock.Unlock()
 
 }
+// // FOR TEST
+// func (s *SocketStore) InsertConnection(conn *websocket.Conn) {
+// 	s.Lock.Lock()
+// 	// insert socket connection
+// 	s.Connections= append(s.Connections, conn)
+// 	s.Lock.Unlock()
+
+// }
 
 // Thread-safe method for removing a connection
 func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, conn *websocket.Conn) {
@@ -50,6 +71,22 @@ func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, conn *webso
 
 	s.Lock.Unlock()
 }
+
+// // FOR TESTING
+// func (s *SocketStore) RemoveConnection(conn *websocket.Conn) {
+// 	s.Lock.Lock()
+// 	// insert socket connection
+// 	var index int
+// 	connections := s.Connections
+// 	for i, connection := range connections {
+// 		if conn == connection {
+// 			index = i
+// 		}
+// 	}
+// 	connections = append(connections[:index], connections[index+1:]...)
+
+// 	s.Lock.Unlock()
+// }
  // fix after Harshitha writes microservice
 func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error{
 	for msg := range msgs {
@@ -65,6 +102,21 @@ func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error{
 	}
 	return nil
 }
+//  // FOR TEST
+//  func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error{
+// 	for msg := range msgs {
+// 		s.Lock.Lock()
+// 		// this could be anything
+// 		newMsg := &MsgObj{}
+// 		if err := json.Unmarshal(msg.Body, newMsg); err != nil {
+// 			return fmt.Errorf("Error unmarshalling userIDs %v", err)
+// 		}
+
+// 		s.WriteToConnections(msg.Body)
+// 		s.Lock.Unlock()
+// 	}
+// 	return nil
+// }
 
 func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID)  {
 	var writeError error;
@@ -78,3 +130,17 @@ func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.Sess
 		}
 	}	
 }
+
+// FOR TEST
+// func (s *SocketStore) WriteToConnections(message []byte)  {
+// 	var writeError error;
+// 	connList := s.Connections
+// 	for _, conn := range connList {
+// 		writeError = conn.WriteMessage(websocket.TextMessage, message)
+// 		if writeError != nil {
+// 			s.RemoveConnection(conn)
+// 			conn.Close()
+// 			return
+// 		}
+// 	}	
+// }

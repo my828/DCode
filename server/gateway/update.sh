@@ -12,12 +12,12 @@ update() {
     docker rm dcodeGateway -f
 
     # pull most recent container images from Dockerhub
-    docker pull harshiakkaraju/dcode-gateway
+    docker pull maryhuibregtse/dcode-gateway
 
     docker network create dcodeNetwork
 
     # set environment variables
-    # GATEWAYADDRESS=":4000" # change later
+    GATEWAYADDRESS=":4000" # change later
     MONGOADDRESS=""
     RABBITADDRESS=""
     RABBITHOSTNAME=""
@@ -43,7 +43,7 @@ update() {
     -e REDISADDRESS=$REDISADDRESS \
     -e GATEWAYADDRESS=$GATEWAYADDRESS \
     --network dcodeNetwork \
-    harshiakkaraju/dcode-gateway
+    maryhuibregtse/dcode-gateway
 
     echo "Done."
 }

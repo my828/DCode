@@ -30,7 +30,7 @@ func main() {
 	signingKey := os.Getenv("SIGNINGKEY")
 	gatewayAddress := os.Getenv("GATEWAYADDRESS")
 	if len(gatewayAddress) == 0 {
-		gatewayAddress = ":3000"
+		gatewayAddress = ":4000"
 	}
 	// tlsCertificate := os.Getenv("TLSCERT")
 	// tlsKey := os.Getenv("TLSKEY")
@@ -50,7 +50,7 @@ func main() {
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	// for websocket connections 
-	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
+	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	// @TODO: redirect to microservice
 	router.Handle("/dcode/v1/{pageID}", nil)
 	// router.Handle("/dcode/v1/{pageID}/canvas", nil)

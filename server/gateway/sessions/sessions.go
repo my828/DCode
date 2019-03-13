@@ -1,6 +1,7 @@
 package sessions
 
 import (
+	"path"
 	"fmt"
 	"net/http"
 )
@@ -21,7 +22,8 @@ func SaveSession(sessionID SessionID, sessionState interface{}, store Store) (Se
 func GetSessionID(r *http.Request) (SessionID, error) {
 	sessionID := r.Header.Get(HeaderSessionID)
 	if len(sessionID) == 0 {
-		return InvalidSessionID, fmt.Errorf("invalid sessionID: %d", http.StatusBadRequest)
+		// return InvalidSessionID, fmt.Errorf("invalid sessionID: %d", http.StatusBadRequest)
+		sessionID = path.Base(r.URL.Path)
 	}
 	return SessionID(sessionID), nil
 }
