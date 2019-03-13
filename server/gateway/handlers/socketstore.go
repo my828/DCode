@@ -15,25 +15,36 @@ type SocketStore struct {
 	Connections map[sessions.SessionID][]*websocket.Conn
 	Lock sync.Mutex
 }
+// NewSocketStore makes a new map and mutex to safely store websockets
+func NewSocketStore() *SocketStore{
+	return &SocketStore{ 
+		make(map[sessions.SessionID][]*websocket.Conn),
+		sync.Mutex{},
+	}
+}
 type MsgObj struct {
 	SessionID 	   sessions.SessionID  `jdon:"sessionId"`
 	Editor         string     `json:"editor"`
 }
 // Thread-safe method for inserting a connection
-func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) int {
+func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) {
 	s.Lock.Lock()
 	// insert socket connection
 	s.Connections[ss.SessionID] = append(s.Connections[ss.SessionID], conn)
-	connID := len(s.Connections[ss.SessionID])
 	s.Lock.Unlock()
-	return connID
+
 }
 
 // Thread-safe method for removing a connection
-func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, id int) {
+func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, conn *websocket.Conn) {
 	s.Lock.Lock()
 	// insert socket connection
-	s.Connections[sessionID] = append(s.Connections[sessionID][:id], s.Connections[sessionID][id+1:]...)
+	connections := s.Connections[sessionID]
+	for index, connection := range connections {
+		if conn == connection {
+			connections = append(connections[:index], connections[index+1:]...)
+		}
+	}
 	s.Lock.Unlock()
 }
  // fix after Harshitha writes microservice
@@ -52,13 +63,13 @@ func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error{
 	return nil
 }
 
-func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID, connID int)  {
+func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID)  {
 	var writeError error;
-	connList := s.Connections[id]
+	connList := s.Connections[sessionID]
 	for _, conn := range connList {
 		writeError = conn.WriteMessage(websocket.TextMessage, message)
 		if writeError != nil {
-			s.RemoveConnection(sessionID, connID)
+			s.RemoveConnection(sessionID, conn)
 			conn.Close()
 			return
 		}

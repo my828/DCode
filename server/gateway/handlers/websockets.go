@@ -33,6 +33,14 @@ type WebSocket struct {
 type msg struct {
 	editorbody string
 }
+// NewWebSocket creates and populates websocket structs
+func NewWebSocket(ss *SocketStore, ctx *HandlerContext) *WebSocket {
+	return &WebSocket{
+		ss,
+		ctx,
+		Upgrader,
+	}
+}
 
 // WebSocketConnectionHandler manages new connections and data coming in and out of them
 func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +49,7 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 
 	// getting auth token and adding to query string
 	sessionState := &SessionState{}
-	_, err := sessions.GetState(r, ws.CTX.SigningKey, ws.CTX.SessionsStore, sessionState)
+	_, err := sessions.GetState(r, ws.CTX.SessionsStore, sessionState)
 	log.Println(sessionState)
 	if err != nil {
 		log.Println("Page does not exist")
@@ -56,18 +64,17 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 	// inserting connection to connection store
-	id := ws.SS.InsertConnection(conn, sessionState)
+	ws.SS.InsertConnection(conn, sessionState)
 
-	go (func(conn *websocket.Conn, sessionState *SessionsState, ws *WebSocket, id int) {
+	go (func(conn *websocket.Conn, sessionState *SessionState, ws *WebSocket) {
 		defer conn.Close()
-		defer ws.SS.RemoveConnection(sessionState, id)
+		defer ws.SS.RemoveConnection(sessionState.SessionID, conn)
 
 		for {
 			messageType, _, err := conn.ReadMessage()
 
 			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-				log.Print("message sucessfully made", string(p))
-				ws.SS.WriteToAllConnections(websocket.TextMessage, append([]byte("Hello from server: "), p...))
+				log.Print("message sucessfully made")
 
 			} else if messageType == websocket.CloseMessage {
 				log.Print("Message was a closeMessage, try resending")

@@ -29,7 +29,7 @@ func HeartBeatHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	signingKey := os.Getenv("SIGNINGKEY")
 	gatewayAddress := os.Getenv("GATEWAYADDRESS")
-	if len(gatewayAddress) := 0 {
+	if len(gatewayAddress) == 0 {
 		gatewayAddress = ":3000"
 	}
 	// tlsCertificate := os.Getenv("TLSCERT")
@@ -42,13 +42,15 @@ func main() {
 	redisStore := sessions.NewRedisStore(redisDB, time.Hour*48)
 
 	context := handlers.NewHandlerContext(signingKey, redisStore)
+	socketstore := handlers.NewSocketStore() // will this create a new store everytime main runs? not sure if this is the right thing
+	websocket := handlers.NewWebSocket(socketstore,context)
 	router := mux.NewRouter()
 	
 	router.HandleFunc("/dcode", HeartBeatHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	// for websocket connections 
-	router.HandleFunc("/dcode/v1/ws", ws.WebSocketConnectionHandler)
+	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
 	// @TODO: redirect to microservice
 	router.Handle("/dcode/v1/{pageID}", nil)
 	// router.Handle("/dcode/v1/{pageID}/canvas", nil)
