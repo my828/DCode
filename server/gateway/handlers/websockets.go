@@ -65,6 +65,7 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 	}
 	// inserting connection to connection store
 	ws.SS.InsertConnection(conn, sessionState)
+	go ws.SS.Listen(conn,sessionState.SessionID)
 	// ws.SS.InsertConnection(conn)
 
 	// go (func(conn *websocket.Conn, ws *WebSocket) {

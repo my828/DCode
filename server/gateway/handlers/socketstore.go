@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"fmt"
 	"sync"
 	"github.com/gorilla/websocket"
@@ -55,6 +56,25 @@ func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) {
 // 	s.Lock.Unlock()
 
 // }
+
+func (s *SocketStore) Listen(conn *websocket.Conn, ss sessions.SessionID) {
+	for {
+		messageType, p, err := conn.ReadMessage()
+   
+		if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+		  log.Print("Client says ", p)
+		  log.Print("Writing to all sockets ", string(p))
+		  s.WriteToConnections(append([]byte("Hello from server: "), p...), ss)
+		} else if messageType == websocket.CloseMessage {
+		  fmt.Println("Close message received.")
+		  break
+		} else if err != nil {
+		  fmt.Println("Error reading message.")
+		  break
+		}
+		// ignore ping and pong messages
+	  }
+}
 
 // Thread-safe method for removing a connection
 func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, conn *websocket.Conn) {
