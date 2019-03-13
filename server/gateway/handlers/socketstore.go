@@ -39,12 +39,15 @@ func (s *SocketStore) InsertConnection(conn *websocket.Conn, ss *SessionState) {
 func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, conn *websocket.Conn) {
 	s.Lock.Lock()
 	// insert socket connection
+	var index int
 	connections := s.Connections[sessionID]
-	for index, connection := range connections {
+	for i, connection := range connections {
 		if conn == connection {
-			connections = append(connections[:index], connections[index+1:]...)
+			index = i
 		}
 	}
+	connections = append(connections[:index], connections[index+1:]...)
+
 	s.Lock.Unlock()
 }
  // fix after Harshitha writes microservice
