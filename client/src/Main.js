@@ -9,41 +9,41 @@ export default class Main extends React.Component {
         super(props)
         this.socket = null
     }
-    componentDidMount() {
-        const API_WS = 'ws://localhost:4000/ws/'
-        const DCODE_API = "http://localhost:4000/dcode/";
-        fetch(`${DCODE_API}${this.props.state.sessionID}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-        .then(res => {
-            return res.text()
-        })
-        .then((res) => {
-            const socket = new WebSocket(`${DCODE_API}${this.props.state.sessionID}`);
-            this.socket = socket
-            socket.onopen = () => {
-                console.log("CONNECT")
-            }
-            console.log(res)
-            this.props.socket(socket)
-            // this.setState({
-            //     sessionID: sessionID,
+    // componentDidMount() {
+    //     const API_WS = 'ws://localhost:4000/ws/'
+    //     const DCODE_API = "http://localhost:4000/dcode/";
+    //     fetch(`${DCODE_API}${this.props.state.sessionID}`, {
+    //         method: "GET",
+    //         headers: {
+    //             "Content-Type": "application/json"
+    //         }
+    //     })
+    //     .then(res => {
+    //         return res.text()
+    //     })
+    //     .then((res) => {
+    //         const socket = new WebSocket(`${DCODE_API}${this.props.state.sessionID}`);
+    //         this.socket = socket
+    //         socket.onopen = () => {
+    //             console.log("CONNECT")
+    //         }
+    //         console.log(res)
+    //         this.props.socket(socket)
+    //         // this.setState({
+    //         //     sessionID: sessionID,
                 
-            // }, () => {
-            //     // check connection
-            //     socket.onopen = () => {
-            //         console.log("Socket Connect!");
-            //     }
+    //         // }, () => {
+    //         //     // check connection
+    //         //     socket.onopen = () => {
+    //         //         console.log("Socket Connect!");
+    //         //     }
                 
-            // });
-        })
-        .catch(err => {
-             window.alert("Session does not exits!")
-        })
-    }
+    //         // });
+    //     })
+    //     .catch(err => {
+    //          window.alert("Session does not exits!")
+    //     })
+    // }
 
     render() {
         return(

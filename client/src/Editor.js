@@ -11,36 +11,33 @@ const code = "// Welcome to DCode! Copy and paste the link above to hare with fr
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      sessionID: this.props.state.sessionID,
-      code: this.props.state.code,
-      figures: this.props.state.figures
-    }
+    // this.state = {
+    //   sessionID: this.props.state.sessionID,
+    //   code: this.props.state.code,
+    //   figures: this.props.state.figures
+    // }
   }
+  componentDidMount() {
+    this.setState({code: this.props.state.code})
+    console.log(this.state.code)
+  }
+  // componentWillReceiveProps(props) {
+  //   this.setState({
+  //     sessionID: props.state.sessionID,
+  //     code: props.state.code,
+  //     figures: props.state.figures
+  //   });
+  // }
 
-  componentWillReceiveProps(props) {
-    this.setState({
-      sessionID: props.state.sessionID,
-      code: props.state.code,
-      figures: props.state.figures
-    });
-  }
-
-  updateCode(evt) {
-    this.setState({
-      code: evt.target.value
-    }, () => {
-      this.props.update(this.state);
-    });
-  }
   state = { code }
-
   render() {
     return (
-          <Editor
+        <Editor
         value={this.state.code}
-        // onValueChange={(evt) => this.updateCode(evt)}
-        onValueChange={(evt) => this.setState({ code })}
+        // onValueChange={code => this.updateCode(code)}
+        onValueChange={code => this.setState({ code }, () => {
+          this.props.update(this.state)
+        })}
         highlight={code => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
         padding={10}
         style={{

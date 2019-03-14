@@ -12,7 +12,7 @@ class App extends Component {
     super(props)
     this.state = {
       sessionID: "",
-      code: "",
+      code: "// Welcom to Dcode!",
       figures: ""
     }
     this.updateSessionID = this.updateSessionID.bind(this);
@@ -21,6 +21,21 @@ class App extends Component {
 
   // componentDidUpdate() {
   //   this.processMessages();
+  // }
+
+  // componentDidMount = async () => {
+  //   this.socket = new WebSocket(`ws://localhost:4000/ws/`)
+  //   this.socket.onopen = () => {
+  //     console.log("Connect to socket!")
+  //   }
+
+  //   this.socket.onmessage = (evt) => {
+  //     const { data } = evt;
+  //     const parsedData = JSON.parse(data);
+  //     if (parsedData) {
+  //       console.log(parsedData)
+  //     }
+  //   }
   // }
 
   handleNewSession = () => {
@@ -36,7 +51,11 @@ class App extends Component {
        return res.text()
     })
     .then(sessionID => {
-      // const socket = new WebSocket(`${API_WS}${sessionID}`);
+      const socket = new WebSocket(`${API_WS}${sessionID}`);
+      // const socket = new WebSocket(`${API_WS}`);
+      socket.onopen = () => {
+          console.log("Connect")
+      }
       this.setState({
         sessionID: sessionID,
       })
@@ -50,13 +69,15 @@ class App extends Component {
     this.socket = socket
   }
 
-  updatePageState(page) {
+  updatePageState = (page) => {
     this.setState({
       sessionID: page.sessionID,
       code: page.code,
       figures: page.figures
     }, () => {
-      this.socket.send(this.state);
+      // this.socket.send(this.state);
+      console.log(page.code)
+      console.log(page.figures)
     });
   }
 

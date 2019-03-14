@@ -12,11 +12,11 @@ export default class Canvas extends React.Component {
         this.canvasRef = React.createRef();
     }
 
-    componentWillReceiveProps(props) {
-        this.setState({
-            path: props.path
-        })
-    }
+    // componentWillReceiveProps(props) {
+    //     this.setState({
+    //         figures: props.figures
+    //     })
+    // }
 
     // componentDidUpdate() {
     //     const socket = this.props.socket
@@ -26,8 +26,7 @@ export default class Canvas extends React.Component {
     // componentDidMount() {
     //     this.setState({
     //         info: this.props.info
-    //     })
-        
+    //     })     
     // }
 
     render() {
@@ -46,8 +45,10 @@ export default class Canvas extends React.Component {
                             lineWidth={3}
                             // onChange={(e) => console.log(this.canvasRef.current.toJSON())}
                             // this.props.sendCanvasData(this)
-                            onChange={(evt) => this.setState({path: this.canvasRef.current.toJSON()})}
-                            // value={this.state.path}
+                            onChange={(evt) => this.setState({figures: this.canvasRef.current.toJSON()},
+                             () => this.props.update(this.state))}
+                            // value={this.props.state.figures}
+                            defaultValue={this.props.state.figures}
                     />
                 </div>
             </div>
