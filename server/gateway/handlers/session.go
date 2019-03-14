@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"DCode/server/gateway/sessions"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"

@@ -10,11 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/streadway/amqp"
-<<<<<<< HEAD
-	"DCode/server/gateway/sessions"
-=======
 )
->>>>>>> master
 
 // IPAddress represents the ip address obtaiend from request
 type IPAddress string
