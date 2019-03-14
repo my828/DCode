@@ -5,7 +5,7 @@ import Main from './Main';
 import Splash from './SplashScreen'
 
 import './editstyle.css';
-import {HashRouter as Router, Switch, Link, Route} from "react-router-dom";
+import {HashRouter as Router, Switch, Link, Route, Redirect} from "react-router-dom";
 
 class App extends Component {
   constructor(props) {
@@ -19,50 +19,49 @@ class App extends Component {
     this.socket = null;
   }
 
-  // componentDidUpdate() {
-  //   this.processMessages();
-  // }
+  componentDidUpdate() {
+    console.log(`app state was updated...`);
+    if (this.state.sessionID) {
+        const WSS_ENDPOINT = `ws://localhost:4000/ws`;
 
-  // componentDidMount = async () => {
-  //   this.socket = new WebSocket(`ws://localhost:4000/ws/`)
-  //   this.socket.onopen = () => {
-  //     console.log("Connect to socket!")
-  //   }
+        let requestURL = `${WSS_ENDPOINT}/${this.state.sessionID}`;
+        console.log(`wss request url: ${requestURL}`);
+        this.socket = new WebSocket(`${WSS_ENDPOINT}/${this.state.sessionID}`);
 
-  //   this.socket.onmessage = (evt) => {
-  //     const { data } = evt;
-  //     const parsedData = JSON.parse(data);
-  //     if (parsedData) {
-  //       console.log(parsedData)
-  //     }
-  //   }
-  // }
-
-  handleNewSession = () => {
-    const API_WS = 'ws://localhost:4000/ws/'
-    const DCODE_API = "http://localhost:4000/dcode"; // api.harshiakkaraju/decode 
-    fetch(`${DCODE_API}/v1/new`, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
+        // handle errors first
+        this.socket.onerror = (err) => {
+            console.log(`error opening websocket connection`, err);
         }
-    })
-    .then(res => {
-       return res.text()
-    })
-    .then(sessionID => {
-      const socket = new WebSocket(`${API_WS}${sessionID}`);
-      // const socket = new WebSocket(`${API_WS}`);
-      socket.onopen = () => {
-          console.log("Connect")
-      }
-      this.setState({
-        sessionID: sessionID,
+
+        // connection is open
+        this.socket.onopen = () => {
+          console.log(`websocket connection opened for session: ${this.state.sessionID}`);
+        }
+
+        // @TODO: handle messages
+    }
+  }
+
+  getSessionID = (sessionID) => {
+      const DCODE_API = `http://localhost:4000/dcode`;
+
+      let requestURL = `${DCODE_API}/v1/${sessionID}`;
+      // send request to API
+      fetch(requestURL, {
+          method: "GET",
       })
-    })
-    .catch(err => {
-      //window.alert("session does not exist!");
-    })
+      .then(res => {
+          return res.text();
+      })
+      .then(body => {
+          this.setState({
+            sessionID: sessionID
+          });
+          console.log(`Got sessionID at the specific resource: ${body}`);
+      })
+      .catch(err => {
+          console.log(`Error: ${err}`);
+      });
   }
 
   passSocket = (socket) => {
@@ -104,21 +103,17 @@ class App extends Component {
   }
 
   renderSplashPage() {
-    console.log(this.state.sessionID);
-    return <Splash sessionID={this.state.sessionID} handleNewSession={this.handleNewSession}></Splash>
+    return <Splash sessionID={this.state.sessionID} getSessionID={this.getSessionID}></Splash>
   }
 
   render() {
-    // "/decode/v1/:sessionID"
-    // "/decode/v1/sessionID"
-    // const sessionID = this.state.sessionID
-    // const link = "/dcode/v1/"+sessionID
     return (
       <div>
         <Router>
           <Switch>
               <Route exact path="/dcode" render={() => this.renderSplashPage()}></Route>
               <Route exact path={"/dcode/:sessionID"} render={() => this.renderPage()}></Route>
+              <Redirect to="/dcode" />
           </Switch>
         </Router>
       </div>
