@@ -44,40 +44,6 @@ func NewWebSocket(ctx *HandlerContext) *WebSocket {
 	}
 }
 
-// // WebSocketConnectionHandler manages new connections and data coming in and out of them
-// func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
-// 	log.Print("Inside Websocket Handler")
-// 	// upgrading to websocket
-// 	conn, err := ws.Upgrader.Upgrade(w, r, nil)
-// 	if err != nil {
-// 		http.Error(w, "Failed to open websocket connection", 401)
-// 		return
-// 	}
-// 	remoteAddr := IPAddress(r.RemoteAddr)
-// 	// inserting connection to connection store
-// 	ws.Ctx.SocketStore.InsertConnection(remoteAddr, conn)
-
-// 	go (func(remoteAddress IPAddress, conn *websocket.Conn) {
-// 		defer conn.Close()
-// 		defer ws.Ctx.SocketStore.RemoveIPConnection(remoteAddress)
-
-// 		for {
-// 			messageType, _, err := conn.ReadMessage()
-// 			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-// 				log.Print("message sucessfully made")
-
-// 			} else if messageType == websocket.CloseMessage {
-// 				log.Print("Message was a closeMessage, try resending")
-// 				break
-// 			} else if err != nil {
-// 				log.Print("Error reading message.")
-// 				break
-// 			}
-// 		}
-
-// 	})(remoteAddr, conn)
-// }
-
 // WebSocketConnectionHandler manages new connections and data coming in and out of them
 func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Inside WebSocketHandler...")

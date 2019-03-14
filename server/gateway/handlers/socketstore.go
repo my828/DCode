@@ -96,18 +96,16 @@ func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, connection 
 	}
 	var index int
 	connections := s.Connections[sessionID]
-	if len(connections) > 1 {
-		for i, conn := range connections {
-			if reflect.DeepEqual(conn, connection) {
-				index = i
-			}
+	for i, conn := range connections {
+		if reflect.DeepEqual(conn, connection) {
+			index = i
 		}
-		connections = append(connections[:index], connections[(index+1):])
-		s.Connections[sessionID] = connections
-	} else {
-		s.Connections[sessionID] = []*websocket.Conn{}
 	}
+	log.Println("length", len(connections))
+	log.Println("index", index)
 
+	connections = append(connections[:index], connections[(index+1):]...)
+	s.Connections[sessionID] = connections
 	s.Lock.Unlock()
 }
 

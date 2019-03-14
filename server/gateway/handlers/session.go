@@ -10,7 +10,11 @@ import (
 )
 
 const clientDomain = "https://catsfordays.me"
+
+// ContentTypeHeader is a constant for Constant-Type header
 const ContentTypeHeader = "Content-Type"
+
+// ContentTypeApplicationJSON is a constant for app/json header value
 const ContentTypeApplicationJSON = "application/json"
 
 // Upgrader checks the orgin and specs for websockets

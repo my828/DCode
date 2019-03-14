@@ -51,7 +51,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/dcode", HeartBeatHandler)
-	router.HandleFunc("/dcode/v1/ws/{pageID}", websocket.WebSocketConnectionHandler)
+	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
@@ -66,7 +66,7 @@ func main() {
 	// 	go socketStore.Notify(messagesChannel)
 	// }
 
-	log.Printf("!!!!Server is listening on port: %s\n", gatewayAddress)
+	log.Printf("Server is listening on port: %s\n", gatewayAddress)
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
