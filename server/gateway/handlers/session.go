@@ -29,14 +29,13 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 	// u, err := url.Parse(r.URL.Path)
 	// u.Path = path.Join(u.Path, string([]byte(sessionID)))
 	// log.Print("NEW PATH: ", u.Path)
-	log.Println("SessionID: " + sessionID)
 	// responds with sessionID
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	// if err := json.NewEncoder(w).Encode(sessionID); err != nil {
 	// 	http.Error(w, fmt.Sprintf("errr"), http.StatusInternalServerError)
 	// 	return
 	// }
-	// log.Println("Header: ", w.Header().Get(HeaderSessionID))
+	log.Println("Header: ", w.Header().Get(HeaderSessionID))
 	w.Write([]byte(sessionID))
 }
 

@@ -1,9 +1,10 @@
 package sessions
 
 import (
-	"path"
 	"fmt"
+	"log"
 	"net/http"
+	"path"
 )
 
 // HeaderSessionID is a custom header for transferring SessionID
@@ -24,6 +25,7 @@ func GetSessionID(r *http.Request) (SessionID, error) {
 	if len(sessionID) == 0 {
 		// return InvalidSessionID, fmt.Errorf("invalid sessionID: %d", http.StatusBadRequest)
 		sessionID = path.Base(r.URL.Path)
+		log.Print("SessionID1: " + sessionID)
 	}
 	return SessionID(sessionID), nil
 }
