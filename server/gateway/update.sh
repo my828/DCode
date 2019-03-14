@@ -8,6 +8,7 @@ update() {
     docker "Removing existing decodeNetwork..."
     docker network rm decodeNetwork
 
+    docker rm rabbit
     docker rm sessions -f
     docker rm dcodeGateway -f
 
@@ -19,19 +20,23 @@ update() {
     # set environment variables
     GATEWAYADDRESS=":4000" # change later
     MONGOADDRESS=""
-    RABBITADDRESS=""
-    RABBITHOSTNAME=""
-    RABBITMQNAME=""
+    RABBITNAME="rabbit"
+    RABBITADDRESS="amqp://$RABBITNAME:5672/"
     REDISADDRESS="sessions:6379"
     SIGNINGKEY=""
     TLSCERT=""
     TLSKEY=""
+    NETWORK="dcodeNetwork"
+
+    docker run -d \
+    --name $RABBITNAME \
+    --network $NETWORK rabbitmq
 
     echo "Running Redis container..."
-    docker run -d --name sessions --network dcodeNetwork redis
+    docker run -d --name sessions --network $NETWORK redis
 
     echo "Waiting for all dependencies to boot up..."
-    sleep 5s
+    sleep 20s
 
     #  -v /etc/letsencrypt:/etc/letsencrypt:ro \
     echo "Running decode-gateway container..."
@@ -42,7 +47,8 @@ update() {
     -e SIGNINGKEY=$SIGNINGKEY \
     -e REDISADDRESS=$REDISADDRESS \
     -e GATEWAYADDRESS=$GATEWAYADDRESS \
-    --network dcodeNetwork \
+    -e RABBITADDRESS=$RABBITADDRESS \
+    --network $NETWORK \
     maryhuibregtse/dcode-gateway
 
     echo "Done."
