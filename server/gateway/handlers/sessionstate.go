@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/huibrm/DCode/server/gateway/sessions"
+	"DCode/server/gateway/sessions"
 )
 
 // SessionState represents the collection of relevant data for our server
