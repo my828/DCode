@@ -11,9 +11,10 @@ const code = "// Welcome to DCode! Copy and paste the link above to hare with fr
   
  
 export default class App extends React.Component {
-  state = { code };
- 
+
+    state = { code };
   render() {
+    console.log(this.state.code)
     return (
           <Editor
         value={this.state.code}

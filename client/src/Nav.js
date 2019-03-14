@@ -14,7 +14,7 @@ export default class Nav extends React.Component {
             padding: "10px"
         }
         return (
-            <nav class="navbar navbar-expand-md mb-2 m-0 border-bottom justify-content-between" style={navstyle}>
+            <nav className="navbar navbar-expand-md mb-2 m-0 border-bottom justify-content-between" style={navstyle}>
                 <Link to="/"><img src={logo} class="logo" alt="logo" style={logostyle} /></Link>
                 <button>Extend Session</button>
             </nav>
