@@ -57,7 +57,7 @@ func main() {
 	// for websocket connections
 	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	// @TODO:
-	router.Handle("/dcode/v1/{pageID}", nil)
+	router.Handle("/dcode/v1/{pageID}", context.GetPageHandler)
 
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)
