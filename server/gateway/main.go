@@ -34,8 +34,8 @@ func main() {
 	// tlsCertificate := os.Getenv("TLSCERT")
 	// tlsKey := os.Getenv("TLSKEY")
 	redisAddress := os.Getenv("REDISADDRESS")
-	mqAddress := os.Getenv("RABBITMQADDRESS")
-	mqName := os.Getenv("RABBITMQNAME")
+	mqAddress := os.Getenv("RABBITADDRESS")
+	mqName := os.Getenv("RABBITNAME")
 
 	// connect to Redis
 	redisDB := redis.NewClient(&redis.Options{
@@ -43,21 +43,22 @@ func main() {
 	})
 	redisStore := sessions.NewRedisStore(redisDB, time.Hour*48)
 
-	socketStore := handlers.NewSocketStore()
 	rabbitStore := handlers.NewRabbitStore(mqAddress, mqName)
+	socketStore := handlers.NewSocketStore(rabbitStore, redisStore)
+	messagesChannel := rabbitStore.Consume()
+	go socketStore.Notify(messagesChannel)
 
-	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore, rabbitStore)
-	websocket := handlers.NewWebSocket(socketStore, context)
+	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore)
+	// websocket := handlers.NewWebSocket(socketStore, context)
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/dcode", HeartBeatHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
-	// for websocket connections
-	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
-	// @TODO:
-	router.Handle("/dcode/v1/{pageID}", nil)
+	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
+
+	// go ss.write
 
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)

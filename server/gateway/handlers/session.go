@@ -2,10 +2,7 @@ package handlers
 
 import (
 	"DCode/server/gateway/sessions"
-	"log"
 	"net/http"
-	"net/url"
-	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -44,9 +41,9 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "error creating a new session", http.StatusInternalServerError)
 		return
 	}
-	u, err := url.Parse(r.URL.Path)
-	u.Path = path.Join(u.Path, string([]byte(sessionID)))
-	log.Print("NEW PATH: ", u.Path)
+	// u, err := url.Parse(r.URL.Path)
+	// u.Path = path.Join(u.Path, string([]byte(sessionID)))
+	// log.Print("NEW PATH: ", u.Path)
 	// responds with sessionID
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	w.Write([]byte(sessionID))

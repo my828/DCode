@@ -7,7 +7,6 @@ import (
 // SessionState represents the collection of relevant data for our server
 type SessionState struct {
 	SessionID   sessions.SessionID `json:"sessionID"`
-	ActiveUsers []*string          `json:"activeUsers"`
-	Figures     string
-	Code        string
+	Figures     string 			   `json:"figures"`
+	Code        string			   `json:"code"`
 }

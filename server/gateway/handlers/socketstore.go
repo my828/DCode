@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"sync"
 
 	"DCode/server/gateway/sessions"
 
 	"github.com/gorilla/websocket"
+	"github.com/streadway/amqp"
 )
 
 // IPAddress represents the ip address obtaiend from request
@@ -24,28 +27,27 @@ type SocketStore struct {
 	Connections   SessionConnections
 	IPConnections IPConnections
 	Lock          sync.Mutex
+	RabbitStore   *RabbitStore
+	RedisStore  *sessions.RedisStore
 }
 
-/// for test
-// type SocketStore struct {
-// 	Connections []*websocket.Conn
-// 	Lock sync.Mutex
-// }
 
 // NewSocketStore makes a new map and mutex to safely store websockets
-func NewSocketStore() *SocketStore {
+func NewSocketStore(rabbit *RabbitStore, redis *sessions.RedisStore) *SocketStore {
 	return &SocketStore{
 		Connections:   SessionConnections{},
 		IPConnections: IPConnections{},
 		Lock:          sync.Mutex{},
+		RabbitStore: rabbit,
+		RedisStore: redis,
 	}
 }
 
 // Message is a struct to capture the
 type Message struct {
 	SessionID sessions.SessionID `json:"sessionID"`
-	Code      string             `json:"code"`
 	Figures   string             `json:"figures"`
+	Code      string             `json:"code"`
 }
 
 // InsertConnection is a thread-safe method for inserting a connection
@@ -61,20 +63,28 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 	go s.Listen(sessionState)
 }
 
-// InsertConnection(connection *websocket.Conn, sessionState *SessionState)
-
 // Listen receives messages from the websocket connection and populates the message queue
-func (s *SocketStore) Listen(sessionState *SessionState) {
+func (s *SocketStore) Listen(sessionState *SessionState) error {
 	for {
 		connections := s.Connections[sessionState.SessionID]
 		for index, connection := range connections {
-			message := &Message{}
-			err := connection.ReadJSON(message)
+			m := &Message{}
+			err := connection.ReadJSON(m)
 			if err != nil {
 				s.RemoveConnection(sessionState.SessionID, connection, index)
 			} else {
+				// save to redis
+				newSS := &SessionState{
+					m.SessionID,
+					m.Figures,
+					m.Code,
+				}
+				s.RedisStore.Save(m.SessionID, newSS)
 				// save message to message queue
-				// rabbitstore.publish(message)
+				if err := s.RabbitStore.Publish(m); err != nil {
+					return fmt.Errorf("Error unmarshalling userIDs %v", err)	
+				}
+
 			}
 		}
 	}
@@ -93,46 +103,34 @@ func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, connection 
 	s.Lock.Unlock()
 }
 
-// // FOR TESTING
-// func (s *SocketStore) RemoveConnection(conn *websocket.Conn) {
-// 	s.Lock.Lock()
-// 	// insert socket connection
-// 	var index int
-// 	connections := s.Connections
-// 	for i, connection := range connections {
-// 		if conn == connection {
-// 			index = i
-// 		}
-// 	}
-// 	connections = append(connections[:index], connections[index+1:]...)
 
-// // 	s.Lock.Unlock()
-// // }
-// // fix after Harshitha writes microservice
-// func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error {
-// 	for msg := range msgs {
-// 		s.Lock.Lock()
-// 		// this could be anything
-// 		newMsg := &MsgObj{}
-// 		if err := json.Unmarshal(msg.Body, newMsg); err != nil {
-// 			return fmt.Errorf("Error unmarshalling userIDs %v", err)
-// 		}
+// Notify reads from Rabbit mq and writes to connections
+func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error {
+	for msg := range msgs {
+		s.Lock.Lock()
+		// this could be anything
+		message := &Message{}
+		if err := json.Unmarshal(msg.Body, message); err != nil {
+			return fmt.Errorf("Error unmarshalling userIDs %v", err)
+		}
+		s.WriteToConnections(msg.Body, message.SessionID)
+		s.Lock.Unlock()
+	}
+	return nil
+}
 
-// 		s.WriteToConnections(msg.Body, newMsg.SessionID)
-// 		s.Lock.Unlock()
-// 	}
-// 	return nil
-// }
+// WriteToConnections writes to all the active connections for the session id
+func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID) {
+	var writeError error
+	connList := s.Connections[sessionID]
+	for index, conn := range connList {
+		writeError = conn.WriteMessage(websocket.TextMessage, message)
+		if writeError != nil {
+			s.RemoveConnection(sessionID, conn, index)
+			conn.Close()
+			return
+		}
+	}
+}
 
-// func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID) {
-// 	var writeError error
-// 	connList := s.Connections[sessionID]
-// 	for _, conn := range connList {
-// 		writeError = conn.WriteMessage(websocket.TextMessage, message)
-// 		if writeError != nil {
-// 			s.RemoveConnection(sessionID, conn)
-// 			conn.Close()
-// 			return
-// 		}
-// 	}
-// }
+

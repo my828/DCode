@@ -11,6 +11,7 @@ import (
 type RabbitStore struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
+	Queue      amqp.Queue
 	QueueName  string
 }
 
@@ -26,34 +27,36 @@ func NewRabbitStore(mqAddress string, mqName string) *RabbitStore {
 		log.Println(err)
 		return nil
 	}
+	queue, err := channel.QueueDeclare(
+		mqName, // name
+		false,  // durable
+		false,  // delete when usused
+		false,  // exclusive
+		false,  // no-wait
+		nil,    // arguments
+	)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	return &RabbitStore{
 		Connection: connection,
 		Channel:    channel,
+		Queue:      queue,
 		QueueName:  mqName,
 	}
 }
 
 // Consume reads from the rabbit message queue and returns a go channel
 func (rs *RabbitStore) Consume() <-chan amqp.Delivery {
-	queue, err := rs.Channel.QueueDeclare(
-		rs.QueueName, // name
-		false,        // durable
-		false,        // delete when usused
-		false,        // exclusive
-		false,        // no-wait
-		nil,          // arguments
-	)
-	if err != nil {
-		log.Printf("error declaring a queue: %v\n", err)
-	}
 	messages, err := rs.Channel.Consume(
-		queue.Name, // queue
-		"",         // consumer
-		true,       // auto-ack
-		false,      // exclusive
-		false,      // no-local
-		false,      // no-wait
-		nil,        // args
+		rs.Queue.Name, // queue
+		"",            // consumer
+		true,          // auto-ack
+		false,         // exclusive
+		false,         // no-local
+		false,         // no-wait
+		nil,           // args
 	)
 	if err != nil {
 		log.Printf("error consuming from queue: %v\n", err)
@@ -67,25 +70,25 @@ func (rs *RabbitStore) Publish(message *Message) error {
 	if err != nil {
 		log.Println("error encoding json")
 	}
-	queue, err := rs.Channel.QueueDeclare(
-		rs.QueueName, // name
-		false,        // durable
-		false,        // delete when usused
-		false,        // exclusive
-		false,        // no-wait
-		nil,          // arguments
-	)
-	if err != nil {
-		log.Printf("error declaring a queue: %v\n", err)
-	}
 	err = rs.Channel.Publish(
 		"",
-		queue.Name,
+		rs.QueueName,
 		false,
 		false,
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        []byte(body),
 		})
+	
+	// for testing
+	log.Printf(" [x] Sent %s", body)
+	failOnError(err, "Failed to publish a message")
 	return nil
 }
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %s", msg, err)
+	}
+}
+

@@ -10,18 +10,17 @@ type HandlerContext struct {
 	SigningKey    string
 	SessionsStore sessions.Store
 	SocketStore   *SocketStore
-	RabbitStore   *RabbitStore
+
 }
 
 // NewHandlerContext constructs new handler context ensuring that the dependencies are
 // valid values
-func NewHandlerContext(signingKey string, sessionStore sessions.Store, socketStore *SocketStore, rabbitStore *RabbitStore) *HandlerContext {
+func NewHandlerContext(signingKey string, sessionStore sessions.Store, socketStore *SocketStore) *HandlerContext {
 	if sessionStore != nil {
 		return &HandlerContext{
 			SigningKey:    signingKey,
 			SessionsStore: sessionStore,
 			SocketStore:   socketStore,
-			RabbitStore:   rabbitStore,
 		}
 	}
 	return nil
