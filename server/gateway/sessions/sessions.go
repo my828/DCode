@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
+
+	"github.com/gorilla/mux"
 )
 
 // HeaderSessionID is a custom header for transferring SessionID
@@ -23,9 +24,8 @@ func SaveSession(sessionID SessionID, sessionState interface{}, store Store) (Se
 func GetSessionID(r *http.Request) (SessionID, error) {
 	sessionID := r.Header.Get(HeaderSessionID)
 	if len(sessionID) == 0 {
-		// return InvalidSessionID, fmt.Errorf("invalid sessionID: %d", http.StatusBadRequest)
-		sessionID = path.Base(r.URL.Path)
-		log.Print("SessionID1: " + sessionID)
+		vars := mux.Vars(r)
+		sessionID = vars["pageID"]
 	}
 	return SessionID(sessionID), nil
 }

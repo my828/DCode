@@ -1,12 +1,14 @@
 package main
 
 import (
-	"DCode/server/gateway/handlers"
-	"DCode/server/gateway/sessions"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"DCode/server/gateway/handlers"
+
+	"DCode/server/gateway/sessions"
 
 	"github.com/go-redis/redis"
 
@@ -29,32 +31,34 @@ func HeartBeatHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	signingKey := os.Getenv("SIGNINGKEY")
 	gatewayAddress := os.Getenv("GATEWAYADDRESS")
-	if len(gatewayAddress) == 0 {
-		gatewayAddress = ":4000"
-	}
 	// tlsCertificate := os.Getenv("TLSCERT")
 	// tlsKey := os.Getenv("TLSKEY")
 	redisAddress := os.Getenv("REDISADDRESS")
+	mqAddress := os.Getenv("RABBITADDRESS")
+	mqName := os.Getenv("RABBITNAME")
 
+	// connect to Redis
 	redisDB := redis.NewClient(&redis.Options{
 		Addr: redisAddress,
 	})
 	redisStore := sessions.NewRedisStore(redisDB, time.Hour*48)
 
-	context := handlers.NewHandlerContext(signingKey, redisStore)
-	socketstore := handlers.NewSocketStore() // will this create a new store everytime main runs? not sure if this is the right thing
-	websocket := handlers.NewWebSocket(socketstore,context)
+	rabbitStore := handlers.NewRabbitStore(mqAddress, mqName)
+	socketStore := handlers.NewSocketStore(rabbitStore, redisStore)
+	messagesChannel := rabbitStore.Consume()
+	go socketStore.Notify(messagesChannel)
+
+	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore)
+	// websocket := handlers.NewWebSocket(socketStore, context)
+
 	router := mux.NewRouter()
-	
+
 	router.HandleFunc("/dcode", HeartBeatHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
-	// for websocket connections 
-	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
-	// @TODO: redirect to microservice
-	router.Handle("/dcode/v1/{pageID}", nil)
-	// router.Handle("/dcode/v1/{pageID}/canvas", nil)
-	// router.Handle("/dcode/v1/{pageID}/editor", nil)
+	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
+
+	// go ss.write
 
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)
@@ -63,4 +67,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
-  
+
+func createRabbitChannel(mqAddress string, mqName string) {
+
+}
