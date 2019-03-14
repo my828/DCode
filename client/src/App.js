@@ -19,9 +19,9 @@ class App extends Component {
     this.socket = null;
   }
 
-  componentDidUpdate() {
-    this.processMessages();
-  }
+  // componentDidUpdate() {
+  //   this.processMessages();
+  // }
 
   handleNewSession = () => {
     const API_WS = 'ws://localhost:4000/ws/'
@@ -36,24 +36,17 @@ class App extends Component {
        return res.text()
     })
     .then(sessionID => {
-      const socket = new WebSocket(`${API_WS}${sessionID}`);
+      // const socket = new WebSocket(`${API_WS}${sessionID}`);
       this.setState({
         sessionID: sessionID,
-        socket: socket
-      }, () => {
-        // check connection
-        socket.onopen = () => {
-            console.log("Socket Connect!");
-        }
-        
-      });
+      })
     })
     .catch(err => {
       //window.alert("session does not exist!");
     })
   }
 
-  passSocket(socket) {
+  passSocket = (socket) => {
     this.socket = socket
   }
 
