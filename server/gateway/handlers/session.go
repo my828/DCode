@@ -5,23 +5,12 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
+	// "github.com/gorilla/websocket"
 )
 
 const clientDomain = "https://catsfordays.me"
 
 // Upgrader checks the orgin and specs for websockets
-var Upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// if r.Header.Get("Origin") != clientDomain {
-		// 	log.Print("Connection Refused", 403)
-		// 	return false
-		// }
-		return true
-	},
-}
 
 // HeaderSessionID is a custom header for transferring SessionID
 const HeaderSessionID = "X-SessionID"

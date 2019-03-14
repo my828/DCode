@@ -51,41 +51,40 @@ type Message struct {
 }
 
 // InsertConnection is a thread-safe method for inserting a connection
-func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState *SessionState) {
+func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState *SessionState) int {
 	// insert socket connection & unlock
 	s.Lock.Lock()
 	connections := s.Connections[sessions.SessionID(sessionState.SessionID)]
 	connections = append(connections, connection)
+	id := len(connections)
 	s.Connections[sessionState.SessionID] = connections
 	s.Lock.Unlock()
-
+	return id
 	// process incoming messages from the client
-	go s.Listen(sessionState)
+
 }
 
 // Listen receives messages from the websocket connection and populates the message queue
-func (s *SocketStore) Listen(sessionState *SessionState) error {
+func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn, ConnID int) error {
 	for {
-		connections := s.Connections[sessionState.SessionID]
-		for index, connection := range connections {
-			m := &Message{}
-			err := connection.ReadJSON(m)
-			if err != nil {
-				s.RemoveConnection(sessionState.SessionID, connection, index)
-			} else {
-				// save to redis
-				newSS := &SessionState{
-					m.SessionID,
-					m.Figures,
-					m.Code,
-				}
-				s.RedisStore.Save(m.SessionID, newSS)
-				// save message to message queue
-				if err := s.RabbitStore.Publish(m); err != nil {
-					return fmt.Errorf("Error unmarshalling userIDs %v", err)	
-				}
-
+	
+		m := &Message{}
+		err := conn.ReadJSON(m)
+		if err != nil {
+			s.RemoveConnection(sessionState.SessionID, conn, ConnID)
+		} else {
+			// save to redis
+			newSS := &SessionState{
+				m.SessionID,
+				m.Figures,
+				m.Code,
 			}
+			s.RedisStore.Save(m.SessionID, newSS)
+			// save message to message queue
+			if err := s.RabbitStore.Publish(m); err != nil {
+				return fmt.Errorf("Error unmarshalling userIDs %v", err)	
+			}
+
 		}
 	}
 }
