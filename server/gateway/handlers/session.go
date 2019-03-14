@@ -31,18 +31,18 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// add connection to SocketStore
-	remoteAddress := IPAddress(r.RemoteAddr)
-	connection := hc.SocketStore.IPConnections[remoteAddress]
-	sessionConnections := hc.SocketStore.Connections[sessionID]
-	sessionConnections = append(sessionConnections, connection)
-	hc.SocketStore.Connections[sessionID] = sessionConnections
+	// // add connection to SocketStore
+	// remoteAddress := IPAddress(r.RemoteAddr)
+	// connection := hc.SocketStore.IPConnections[remoteAddress]
+	// sessionConnections := hc.SocketStore.Connections[sessionID]
+	// sessionConnections = append(sessionConnections, connection)
+	// hc.SocketStore.Connections[sessionID] = sessionConnections
 
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	w.Write([]byte(sessionID))
 }
 
-// GetPageHandler handles requests to `/dcode/v1/{sessionID}`
+// GetPageHandler handles requests to `/dcode/v1/{pageID}`
 func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request) {
 	sessionState := &SessionState{}
 	_, err := sessions.GetState(r, hc.SessionsStore, sessionState)
@@ -50,13 +50,6 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error getting session", http.StatusInternalServerError)
 		return
 	}
-
-	// add connection to SocketStore
-	remoteAddress := IPAddress(r.RemoteAddr)
-	connection := hc.SocketStore.IPConnections[remoteAddress]
-	sessionConnections := hc.SocketStore.Connections[sessionState.SessionID]
-	sessionConnections = append(sessionConnections, connection)
-	hc.SocketStore.Connections[sessionState.SessionID] = sessionConnections
 
 	// publish message to RabbitMQ
 	message := &Message{

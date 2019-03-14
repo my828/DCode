@@ -1,5 +1,3 @@
-package handlers
-
 import (
 	"encoding/json"
 	"fmt"
@@ -45,9 +43,9 @@ func NewSocketStore(rabbit *RabbitStore, redis *sessions.RedisStore) *SocketStor
 
 // Message is a struct to capture the
 type Message struct {
-	SessionID sessions.SessionID `json:"sessionID"`
-	Figures   string             `json:"figures"`
-	Code      string             `json:"code"`
+	SessionID sessions.SessionID json:"sessionID"
+	Figures   string             json:"figures"
+	Code      string             json:"code"
 }
 
 // InsertConnection is a thread-safe method for inserting a connection
@@ -60,8 +58,6 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 	s.Connections[sessionState.SessionID] = connections
 	s.Lock.Unlock()
 	return id
-	// process incoming messages from the client
-
 }
 
 // Listen receives messages from the websocket connection and populates the message queue
@@ -131,5 +127,3 @@ func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.Sess
 		}
 	}
 }
-
-

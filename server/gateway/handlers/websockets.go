@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"DCode/server/gateway/sessions"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"DCode/server/gateway/sessions"
 )
 
 // Upgrader checks the orgin and specs for websockets
@@ -44,15 +44,46 @@ func NewWebSocket(ctx *HandlerContext) *WebSocket {
 	}
 }
 
+// // WebSocketConnectionHandler manages new connections and data coming in and out of them
+// func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
+// 	log.Print("Inside Websocket Handler")
+// 	// upgrading to websocket
+// 	conn, err := ws.Upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 		http.Error(w, "Failed to open websocket connection", 401)
+// 		return
+// 	}
+// 	remoteAddr := IPAddress(r.RemoteAddr)
+// 	// inserting connection to connection store
+// 	ws.Ctx.SocketStore.InsertConnection(remoteAddr, conn)
+
+// 	go (func(remoteAddress IPAddress, conn *websocket.Conn) {
+// 		defer conn.Close()
+// 		defer ws.Ctx.SocketStore.RemoveIPConnection(remoteAddress)
+
+// 		for {
+// 			messageType, _, err := conn.ReadMessage()
+// 			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+// 				log.Print("message sucessfully made")
+
+// 			} else if messageType == websocket.CloseMessage {
+// 				log.Print("Message was a closeMessage, try resending")
+// 				break
+// 			} else if err != nil {
+// 				log.Print("Error reading message.")
+// 				break
+// 			}
+// 		}
+
+// 	})(remoteAddr, conn)
+// }
+
 // WebSocketConnectionHandler manages new connections and data coming in and out of them
 func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
-	// handle the websocket handshake
-
-	log.Print("Inside Websocket Handler")
-	//getting auth token and adding to query string
+	log.Println("Inside WebSocketHandler...")
 	sessionState := &SessionState{}
 	_, err := sessions.GetState(r, ws.Ctx.SessionsStore, sessionState)
-	log.Println("After session was checked: ID = ", sessionState)
+	log.Println("After session was checked: ID = ", sessionState.SessionID)
 	if err != nil {
 		log.Println("Page does not exist")
 		http.Error(w, "invalid page", http.StatusUnauthorized)
@@ -69,29 +100,4 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 	connID := ws.Ctx.SocketStore.InsertConnection(conn, sessionState)
 	// ws.SS.InsertConnection(conn)
 	go ws.Ctx.SocketStore.Listen(sessionState, conn, connID)
-	// go (func(conn *websocket.Conn, ws *WebSocket) {
-	go (func(conn *websocket.Conn, sessionState *SessionState, ws *WebSocket) {
-		defer conn.Close()
-		defer ws.Ctx.SocketStore.RemoveConnection(sessionState.SessionID, conn, connID)
-		// defer ws.SS.RemoveConnection(conn)
-
-		for {
-			messageType, _, err := conn.ReadMessage()
-
-			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
-				log.Print("message sucessfully made")
-
-			} else if messageType == websocket.CloseMessage {
-				log.Print("Message was a closeMessage, try resending")
-				break
-			} else if err != nil {
-				log.Print("Error reading message.")
-				break
-			}
-			// ignore ping and pong messages
-		}
-
-	})(conn, sessionState, ws)
-	// })(conn, ws)
-
 }
