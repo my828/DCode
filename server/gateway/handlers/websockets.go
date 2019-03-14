@@ -97,7 +97,7 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 	// inserting connection to connection store
-	connID := ws.Ctx.SocketStore.InsertConnection(conn, sessionState)
+	ws.Ctx.SocketStore.InsertConnection(conn, sessionState)
 	// ws.SS.InsertConnection(conn)
-	go ws.Ctx.SocketStore.Listen(sessionState, conn, connID)
+	go ws.Ctx.SocketStore.Listen(sessionState, conn)
 }

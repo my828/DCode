@@ -46,17 +46,12 @@ func main() {
 	rabbitStore := handlers.NewRabbitStore(mqAddress, mqName)
 	socketStore := handlers.NewSocketStore(rabbitStore, redisStore)
 
-	messagesChannel := rabbitStore.Consume()
-	if messagesChannel != nil {
-		go socketStore.Notify(messagesChannel)
-	}
-
 	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore)
 	websocket := handlers.NewWebSocket(context)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/dcode", HeartBeatHandler)
-	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
+	router.HandleFunc("/dcode/v1/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
@@ -66,7 +61,12 @@ func main() {
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)
 
-	log.Printf("Server is listening on port: %s\n", gatewayAddress)
+	// messagesChannel := rabbitStore.Consume()
+	// if messagesChannel != nil {
+	// 	go socketStore.Notify(messagesChannel)
+	// }
+
+	log.Printf("!!!!Server is listening on port: %s\n", gatewayAddress)
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
