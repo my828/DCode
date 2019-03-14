@@ -41,6 +41,14 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "error creating a new session", http.StatusInternalServerError)
 		return
 	}
+
+	// add connection to SocketStore
+	remoteAddress := IPAddress(r.RemoteAddr)
+	connection := hc.SocketStore.IPConnections[remoteAddress]
+	sessionConnections := hc.SocketStore.Connections[sessionID]
+	sessionConnections = append(sessionConnections, connection)
+	hc.SocketStore.Connections[sessionID] = sessionConnections
+
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	w.Write([]byte(sessionID))
 }
@@ -53,19 +61,24 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error getting session", http.StatusInternalServerError)
 		return
 	}
+
+	// add connection to SocketStore
 	remoteAddress := IPAddress(r.RemoteAddr)
-	val := hc.SocketStore.IPConnections[remoteAddress]
-	if val == nil {
-		connection, err := Upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			http.Error(w, "error getting session", http.StatusInternalServerError)
-			return
-		}
-		hc.SocketStore.IPConnections[remoteAddress] = connection
-		hc.SocketStore.InsertConnection(connection, sessionState)
-	} else {
-		hc.SocketStore.InsertConnection(val, sessionState)
+	connection := hc.SocketStore.IPConnections[remoteAddress]
+	sessionConnections := hc.SocketStore.Connections[sessionState.SessionID]
+	sessionConnections = append(sessionConnections, connection)
+	hc.SocketStore.Connections[sessionState.SessionID] = sessionConnections
+
+	// publish message to RabbitMQ
+	message := &Message{
+		SessionID: sessionState.SessionID,
+		Figures:   sessionState.Figures,
+		Code:      sessionState.Code,
 	}
+	hc.SocketStore.RabbitStore.Publish(message)
+
+	w.Header().Add(HeaderSessionID, string(sessionState.SessionID))
+	w.Write([]byte(sessionState.SessionID))
 }
 
 // SessionExtensionHandler extends the session validity by another 48 hours
