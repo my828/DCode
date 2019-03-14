@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"io"
 	"DCode/server/gateway/sessions"
+	"io"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 )
 
 const clientDomain = "https://catsfordays.me"
@@ -15,17 +14,17 @@ const ContentTypeHeader = "Content-Type"
 const ContentTypeApplicationJSON = "application/json"
 
 // Upgrader checks the orgin and specs for websockets
-var Upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// if r.Header.Get("Origin") != clientDomain {
-		// 	log.Print("Connection Refused", 403)
-		// 	return false
-		// }
-		return true
-	},
-}
+// var Upgrader = websocket.Upgrader{
+// 	ReadBufferSize:  1024,
+// 	WriteBufferSize: 1024,
+// 	CheckOrigin: func(r *http.Request) bool {
+// 		// if r.Header.Get("Origin") != clientDomain {
+// 		// 	log.Print("Connection Refused", 403)
+// 		// 	return false
+// 		// }
+// 		return true
+// 	},
+// }
 
 // HeaderSessionID is a custom header for transferring SessionID
 const HeaderSessionID = "X-SessionID"
@@ -76,9 +75,10 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 	} else {
 		hc.SocketStore.InsertConnection(val, sessionState)
 	}
+	log.Println("At end of GetPageHandler")
 	w.Header().Add(ContentTypeHeader, "text/plain")
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w,"websocket connection initiated")
+	io.WriteString(w, "websocket connection initiated")
 }
 
 // SessionExtensionHandler extends the session validity by another 48 hours

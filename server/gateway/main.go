@@ -57,14 +57,14 @@ func main() {
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
-
+	router.HandleFunc("/ws/{pageID}", ws.WebSocketHandler)
 	// go ss.write
 
 	// adds CORS middleware around handlers
-	cors := handlers.NewCORSHandler(router)
+	//cors := handlers.NewCORSHandler(router)
 
 	log.Printf("Server is listening on port: %s\n", gatewayAddress)
-	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
+	log.Fatal(http.ListenAndServe(gatewayAddress, router))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
 }
 

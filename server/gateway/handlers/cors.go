@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -20,6 +21,8 @@ func NewCORSHandler(handlerToWrap http.Handler) *CORSHandler {
 }
 
 func (ch *CORSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("RESPONSE: ", r.Method)
+
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -27,6 +30,7 @@ func (ch *CORSHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Access-Control-Max-Age", "600")
 	// for preflight checks
 	if r.Method == "Options" {
+		log.Println("INSIDE OPTIONS: ")
 		w.WriteHeader(http.StatusOK)
 		return
 	}

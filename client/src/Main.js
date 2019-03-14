@@ -11,7 +11,7 @@ export default class Main extends React.Component {
     }
     componentDidMount() {
         const API_WS = 'ws://localhost:4000/ws/'
-        const DCODE_API = "http://localhost:4000/dcode/";
+        const DCODE_API = "http://localhost:4000/dcode/v1/";
         fetch(`${DCODE_API}${this.props.state.sessionID}`, {
             method: "GET",
             headers: {
@@ -22,12 +22,13 @@ export default class Main extends React.Component {
             return res.text()
         })
         .then((res) => {
-            const socket = new WebSocket(`${DCODE_API}${this.props.state.sessionID}`);
+            console.log("RESPONSE: " + res)
+            const socket = new WebSocket(`${API_WS}${this.props.state.sessionID}`);
+            // const socket = new WebSocket(`${API_WS}${this.props.state.sessionID}`);
             this.socket = socket
             socket.onopen = () => {
                 console.log("CONNECT")
             }
-            console.log(res)
             this.props.socket(socket)
             // this.setState({
             //     sessionID: sessionID,

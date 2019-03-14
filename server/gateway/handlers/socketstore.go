@@ -60,12 +60,15 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 	s.Lock.Unlock()
 
 	// process incoming messages from the client
-	go s.Listen(sessionState)
+	go s.Listen(connection, sessionState)
 }
 
 // Listen receives messages from the websocket connection and populates the message queue
-func (s *SocketStore) Listen(sessionState *SessionState) error {
+func (s *SocketStore) Listen(conn *websocket.Conn, sessionState *SessionState) error {
+	counter := 0
 	for {
+		counter++
+		log.Println("INSIDE GO LISTEN METHOD ", counter)
 		connections := s.Connections[sessionState.SessionID]
 		for index, connection := range connections {
 			m := &Message{}

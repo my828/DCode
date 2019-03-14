@@ -28,19 +28,19 @@ export default class App extends React.Component {
 
   updateCode(evt) {
     this.setState({
-      code: evt.target.value
+      code: evt
     }, () => {
       this.props.update(this.state);
     });
   }
-  state = { code }
+  //state = { code }
 
   render() {
     return (
           <Editor
         value={this.state.code}
-        // onValueChange={(evt) => this.updateCode(evt)}
-        onValueChange={(evt) => this.setState({ code })}
+        onValueChange={evt => this.updateCode(evt)}
+        // onValueChange={code => this.setState({ code })}
         highlight={code => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
         padding={10}
         style={{
