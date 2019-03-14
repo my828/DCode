@@ -100,4 +100,27 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 	connID := ws.Ctx.SocketStore.InsertConnection(conn, sessionState)
 	// ws.SS.InsertConnection(conn)
 	go ws.Ctx.SocketStore.Listen(sessionState, conn, connID)
+
+	go (func(conn *websocket.Conn, sessionState *SessionState, ws *WebSocket, connID int) {
+		defer conn.Close()
+		defer ws.Ctx.SocketStore.RemoveConnection(sessionState.SessionID, conn, connID)
+		// defer ws.SS.RemoveConnection(conn)
+
+		for {
+			messageType, _, err := conn.ReadMessage()
+
+			if messageType == websocket.TextMessage || messageType == websocket.BinaryMessage {
+				log.Print("message sucessfully made")
+
+			} else if messageType == websocket.CloseMessage {
+				log.Print("Message was a closeMessage, try resending")
+				break
+			} else if err != nil {
+				log.Print("Error reading message.")
+				break
+			}
+			// ignore ping and pong messages
+		}
+
+	})(conn, sessionState, ws, connID)
 }

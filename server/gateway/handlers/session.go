@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"DCode/server/gateway/sessions"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -9,58 +10,67 @@ import (
 )
 
 const clientDomain = "https://catsfordays.me"
+const ContentTypeHeader = "Content-Type"
+const ContentTypeApplicationJSON = "application/json"
 
 // Upgrader checks the orgin and specs for websockets
 
 // HeaderSessionID is a custom header for transferring SessionID
 const HeaderSessionID = "X-SessionID"
 
-// NewSessionHandler handles https requests to the `/dcode/v1/new` resource
+// NewSessionHandler handles https requests to the /dcode/v1/new resource
 func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Request) {
-	sessionID, err := sessions.NewSessionID(hc.SigningKey)
-	if err != nil {
-		http.Error(w, "error creating a new session", http.StatusInternalServerError)
+	if r.Method == http.MethodGet {
+		sessionID, err := sessions.NewSessionID(hc.SigningKey)
+		log.Println("generated id")
+		if err != nil {
+			log.Println("error generating new id: ", err)
+			http.Error(w, "error creating a new session", http.StatusInternalServerError)
+			return
+		}
+		sessionState := &SessionState{
+			SessionID: sessionID,
+		}
+		log.Println("here...")
+		_, err = sessions.SaveSession(sessionID, sessionState, hc.SessionsStore)
+		if err != nil {
+			log.Println("error saving: ", err)
+			http.Error(w, "error creating a new session", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Add(HeaderSessionID, string(sessionID))
+		log.Println("Header: ", w.Header().Get(HeaderSessionID))
+		w.Write([]byte(sessionID))
+	} else {
+		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
 		return
 	}
-	sessionState := &SessionState{
-		SessionID: sessionID,
-	}
-	_, err = sessions.SaveSession(sessionID, sessionState, hc.SessionsStore)
-	if err != nil {
-		http.Error(w, "error creating a new session", http.StatusInternalServerError)
-		return
-	}
-
-	// // add connection to SocketStore
-	// remoteAddress := IPAddress(r.RemoteAddr)
-	// connection := hc.SocketStore.IPConnections[remoteAddress]
-	// sessionConnections := hc.SocketStore.Connections[sessionID]
-	// sessionConnections = append(sessionConnections, connection)
-	// hc.SocketStore.Connections[sessionID] = sessionConnections
-
-	w.Header().Add(HeaderSessionID, string(sessionID))
-	w.Write([]byte(sessionID))
 }
 
-// GetPageHandler handles requests to `/dcode/v1/{pageID}`
+// GetPageHandler handles requests to /dcode/v1/{pageID}
 func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request) {
-	sessionState := &SessionState{}
-	_, err := sessions.GetState(r, hc.SessionsStore, sessionState)
-	if err != nil {
-		http.Error(w, "error getting session", http.StatusInternalServerError)
+	if r.Method == http.MethodGet {
+		sessionState := &SessionState{}
+		_, err := sessions.GetState(r, hc.SessionsStore, sessionState)
+		if err != nil {
+			http.Error(w, "error getting session", http.StatusInternalServerError)
+			return
+		}
+
+		// publish message to RabbitMQ
+		message := &Message{
+			SessionID: sessionState.SessionID,
+			Figures:   sessionState.Figures,
+			Code:      sessionState.Code,
+		}
+		hc.SocketStore.RabbitStore.Publish(message)
+
+		w.Header().Add(HeaderSessionID, string(sessionState.SessionID))
+		w.Write([]byte(sessionState.SessionID))
+	} else {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
-	// publish message to RabbitMQ
-	message := &Message{
-		SessionID: sessionState.SessionID,
-		Figures:   sessionState.Figures,
-		Code:      sessionState.Code,
-	}
-	hc.SocketStore.RabbitStore.Publish(message)
-
-	w.Header().Add(HeaderSessionID, string(sessionState.SessionID))
-	w.Write([]byte(sessionState.SessionID))
 }
 
 // SessionExtensionHandler extends the session validity by another 48 hours

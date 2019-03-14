@@ -56,7 +56,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/dcode", HeartBeatHandler)
-	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
+	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)

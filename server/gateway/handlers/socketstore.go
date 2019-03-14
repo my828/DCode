@@ -1,3 +1,4 @@
+package handlers
 import (
 	"encoding/json"
 	"fmt"
@@ -43,9 +44,9 @@ func NewSocketStore(rabbit *RabbitStore, redis *sessions.RedisStore) *SocketStor
 
 // Message is a struct to capture the
 type Message struct {
-	SessionID sessions.SessionID json:"sessionID"
-	Figures   string             json:"figures"
-	Code      string             json:"code"
+	SessionID sessions.SessionID `json:"sessionID"`
+	Figures   string             `json:"figures"`
+	Code      string             `json:"code"`
 }
 
 // InsertConnection is a thread-safe method for inserting a connection
