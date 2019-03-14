@@ -28,8 +28,8 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	u, err := url.Parse(r.URL.Path)
-	u.Path = path.Join(u.Path, string([]byte(sessionID)))
-	log.Print("NEW PATH: ", u.Path)
+	// u.Path = path.Join(u.Path, string([]byte(sessionID)))
+	// log.Print("NEW PATH: ", u.Path)
 	// responds with sessionID
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	w.Write([]byte(sessionID))
@@ -46,6 +46,7 @@ func (hc *HandlerContext) SessionExtensionHandler(w http.ResponseWriter, r *http
 	}
 	// responds with sessionID
 	w.Header().Add(HeaderSessionID, string(sessionID))
+
 	w.Write([]byte("session extended"))
 }
 
