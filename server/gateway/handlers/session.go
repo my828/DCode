@@ -44,6 +44,7 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "error creating a new session", http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	w.Write([]byte(sessionID))
 }
@@ -70,6 +71,7 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 		hc.SocketStore.InsertConnection(val, sessionState)
 	}
 	w.Header().Add(ContentTypeHeader, "text/plain")
+	w.WriteHeader(http.StatusOK)
 	io.WriteString(w,"websocket connection initiated")
 }
 
