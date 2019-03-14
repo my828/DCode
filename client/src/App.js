@@ -11,21 +11,83 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      sessionID: ""
+      sessionID: "",
+      code: "",
+      figures: ""
     }
-    // this.sendCanvasData = this.sendCanvasData.bind(this);
+    this.updateSessionID = this.updateSessionID.bind(this);
+    this.socket = null;
   }
 
-  componentDidMount() {
-    
+  componentDidUpdate() {
+    this.processMessages();
   }
 
-  // sendCanvasData(event) {
-  //   // use to send info through socket
-  // }
+  handleNewSession = () => {
+    const API_WS = 'ws://localhost:4000/ws/'
+    const DCODE_API = "http://localhost:4000/dcode"; // api.harshiakkaraju/decode 
+    fetch(`${DCODE_API}/v1/new`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(res => {
+       return res.text()
+    })
+    .then(sessionID => {
+      const socket = new WebSocket(`${API_WS}${sessionID}`);
+      this.setState({
+        sessionID: sessionID,
+        socket: socket
+      }, () => {
+        // check connection
+        socket.onopen = () => {
+            console.log("Socket Connect!");
+        }
+        
+      });
+    })
+    .catch(err => {
+      //window.alert("session does not exist!");
+    })
+  }
+
+  updatePageState(page) {
+    this.setState({
+      sessionID: page.sessionID,
+      code: page.code,
+      figures: page.figures
+    }, () => {
+      this.socket.send(this.state);
+    });
+  }
+
+  processMessages() {
+    this.state.socket.onmessage = (event) => {
+      var message = JSON.parse(event.data);
+      console.log(message)
+      this.setState({
+        sessionID: message.sessionID,
+        code: message.code,
+        figures: message.figures
+      })
+    }
+  }
+
+  updateSessionID(sessionID) {
+    this.setState({
+      sessionID: sessionID
+    });
+  }
 
   renderPage() {
-    return <Main></Main>
+    return <Main state={this.state} update={this.updatePageState}></Main>
+  }
+
+  renderSplashPage() {
+    console.log(this.state.sessionID);
+    return <Splash sessionID={this.state.sessionID} handleNewSession={this.handleNewSession}></Splash>
   }
 
   render() {
@@ -37,7 +99,7 @@ class App extends Component {
       <div>
         <Router>
           <Switch>
-              <Route exact path="/dcode" component={Splash}></Route>
+              <Route exact path="/dcode" render={() => this.renderSplashPage()}></Route>
               <Route exact path={"/dcode/:sessionID"} render={() => this.renderPage()}></Route>
           </Switch>
         </Router>

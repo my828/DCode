@@ -7,18 +7,38 @@ import Editor from 'react-simple-code-editor';
 // import './prism/prism.css'
 
 const code = "// Welcome to DCode! Copy and paste the link above to hare with friends. Type your code here:";
-
-  
  
 export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sessionID: this.props.state.sessionID,
+      code: this.props.state.code,
+      figures: this.props.state.figures
+    }
+  }
 
-    state = { code };
+  componentWillReceiveProps(props) {
+    this.setState({
+      sessionID: props.state.sessionID,
+      code: props.state.code,
+      figures: props.state.figures
+    });
+  }
+
+  updateCode(evt) {
+    this.setState({
+      code: evt.target.value
+    }, () => {
+      this.props.update(this.state);
+    });
+  }
+
   render() {
-    console.log(this.state.code)
     return (
           <Editor
         value={this.state.code}
-        onValueChange={code => this.setState({ code })}
+        onValueChange={(evt) => this.updateCode(evt)}
         highlight={code => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
         padding={10}
         style={{
