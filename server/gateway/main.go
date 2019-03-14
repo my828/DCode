@@ -45,15 +45,18 @@ func main() {
 
 	rabbitStore := handlers.NewRabbitStore(mqAddress, mqName)
 	socketStore := handlers.NewSocketStore(rabbitStore, redisStore)
+
 	messagesChannel := rabbitStore.Consume()
-	go socketStore.Notify(messagesChannel)
+	if messagesChannel != nil {
+		go socketStore.Notify(messagesChannel)
+	}
 
 	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore)
-	// websocket := handlers.NewWebSocket(socketStore, context)
+	websocket := handlers.NewWebSocket(context)
 
 	router := mux.NewRouter()
-
 	router.HandleFunc("/dcode", HeartBeatHandler)
+	router.HandleFunc("/dcode/v1/ws", websocket.WebSocketConnectionHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
@@ -66,8 +69,4 @@ func main() {
 	log.Printf("Server is listening on port: %s\n", gatewayAddress)
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
 	// log.Fatal(http.ListenAndServeTLS(gatewayAddress, tlsCertificate, tlsKey, cors))
-}
-
-func createRabbitChannel(mqAddress string, mqName string) {
-
 }

@@ -79,7 +79,7 @@ func (rs *RabbitStore) Publish(message *Message) error {
 			ContentType: "application/json",
 			Body:        []byte(body),
 		})
-	
+
 	// for testing
 	log.Printf(" [x] Sent %s", body)
 	failOnError(err, "Failed to publish a message")
@@ -91,4 +91,3 @@ func failOnError(err error, msg string) {
 		log.Fatalf("%s: %s", msg, err)
 	}
 }
-

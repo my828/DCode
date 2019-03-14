@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
+	// "github.com/gorilla/websocket"
 )
 
 const clientDomain = "https://catsfordays.me"
@@ -15,17 +15,6 @@ const ContentTypeHeader = "Content-Type"
 const ContentTypeApplicationJSON = "application/json"
 
 // Upgrader checks the orgin and specs for websockets
-var Upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// if r.Header.Get("Origin") != clientDomain {
-		// 	log.Print("Connection Refused", 403)
-		// 	return false
-		// }
-		return true
-	},
-}
 
 // HeaderSessionID is a custom header for transferring SessionID
 const HeaderSessionID = "X-SessionID"
@@ -46,6 +35,13 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// // add connection to SocketStore
+	// remoteAddress := IPAddress(r.RemoteAddr)
+	// connection := hc.SocketStore.IPConnections[remoteAddress]
+	// sessionConnections := hc.SocketStore.Connections[sessionID]
+	// sessionConnections = append(sessionConnections, connection)
+	// hc.SocketStore.Connections[sessionID] = sessionConnections
+
 	w.Header().Add(HeaderSessionID, string(sessionID))
 	// if err := json.NewEncoder(w).Encode(sessionID); err != nil {
 	// 	http.Error(w, fmt.Sprintf("errr"), http.StatusInternalServerError)
@@ -55,7 +51,7 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 	w.Write([]byte(sessionID))
 }
 
-// GetPageHandler handles requests to `/dcode/v1/{sessionID}`
+// GetPageHandler handles requests to `/dcode/v1/{pageID}`
 func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request) {
 	sessionState := &SessionState{}
 	_, err := sessions.GetState(r, hc.SessionsStore, sessionState)
@@ -63,22 +59,17 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "error getting session", http.StatusInternalServerError)
 		return
 	}
-	remoteAddress := IPAddress(r.RemoteAddr)
-	val := hc.SocketStore.IPConnections[remoteAddress]
-	if val == nil {
-		connection, err := Upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			http.Error(w, "error getting session", http.StatusInternalServerError)
-			return
-		}
-		hc.SocketStore.IPConnections[remoteAddress] = connection
-		hc.SocketStore.InsertConnection(connection, sessionState)
-	} else {
-		hc.SocketStore.InsertConnection(val, sessionState)
+
+	// publish message to RabbitMQ
+	message := &Message{
+		SessionID: sessionState.SessionID,
+		Figures:   sessionState.Figures,
+		Code:      sessionState.Code,
 	}
-	w.Header().Add(ContentTypeHeader, "text/plain")
-	w.WriteHeader(http.StatusOK)
-	io.WriteString(w,"websocket connection initiated")
+	hc.SocketStore.RabbitStore.Publish(message)
+
+	w.Header().Add(HeaderSessionID, string(sessionState.SessionID))
+	w.Write([]byte(sessionState.SessionID))
 }
 
 // SessionExtensionHandler extends the session validity by another 48 hours
