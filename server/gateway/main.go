@@ -49,11 +49,11 @@ func main() {
 	go socketStore.Notify(messagesChannel)
 
 	context := handlers.NewHandlerContext(signingKey, redisStore, socketStore)
-	// websocket := handlers.NewWebSocket(socketStore, context)
+	websocket := handlers.NewWebSocket(context)
 
 	router := mux.NewRouter()
-
 	router.HandleFunc("/dcode", HeartBeatHandler)
+	router.HandleFunc("/ws/{pageID}", websocket.WebSocketConnectionHandler)
 	router.HandleFunc("/dcode/v1/new", context.NewSessionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
