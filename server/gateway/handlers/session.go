@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"io"
 	"DCode/server/gateway/sessions"
 	"log"
 	"net/http"
@@ -10,6 +11,8 @@ import (
 )
 
 const clientDomain = "https://catsfordays.me"
+const ContentTypeHeader = "Content-Type"
+const ContentTypeApplicationJSON = "application/json"
 
 // Upgrader checks the orgin and specs for websockets
 var Upgrader = websocket.Upgrader{
@@ -72,6 +75,8 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 	} else {
 		hc.SocketStore.InsertConnection(val, sessionState)
 	}
+	w.Header().Add(ContentTypeHeader, "text/plain")
+	io.WriteString(w,"websocket connection initiated")
 }
 
 // SessionExtensionHandler extends the session validity by another 48 hours
