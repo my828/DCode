@@ -53,6 +53,10 @@ class App extends Component {
     })
   }
 
+  passSocket(socket) {
+    this.socket = socket
+  }
+
   updatePageState(page) {
     this.setState({
       sessionID: page.sessionID,
@@ -64,7 +68,7 @@ class App extends Component {
   }
 
   processMessages() {
-    this.state.socket.onmessage = (event) => {
+    this.socket.onmessage = (event) => {
       var message = JSON.parse(event.data);
       console.log(message)
       this.setState({
@@ -82,7 +86,7 @@ class App extends Component {
   }
 
   renderPage() {
-    return <Main state={this.state} update={this.updatePageState}></Main>
+    return <Main state={this.state} update={this.updatePageState} socket={this.passSocket}></Main>
   }
 
   renderSplashPage() {

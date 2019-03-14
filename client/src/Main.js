@@ -17,18 +17,19 @@ export default class Main extends React.Component {
         .then(res => {
             return res.text()
         })
-        .then(sessionID => {
-            const socket = new WebSocket(`${API_WS}${sessionID}`);
-            this.setState({
-                sessionID: sessionID,
-                socket: socket
-            }, () => {
-                // check connection
-                socket.onopen = () => {
-                    console.log("Socket Connect!");
-                }
+        .then(() => {
+            const socket = new WebSocket(`${API_WS}${this.props.state.sessionID}`);
+            this.props.socket(socket)
+            // this.setState({
+            //     sessionID: sessionID,
                 
-            });
+            // }, () => {
+            //     // check connection
+            //     socket.onopen = () => {
+            //         console.log("Socket Connect!");
+            //     }
+                
+            // });
         })
         .catch(err => {
              window.alert("Session does not exits!")
