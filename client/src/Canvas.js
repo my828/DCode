@@ -12,6 +12,12 @@ export default class Canvas extends React.Component {
         this.canvasRef = React.createRef();
     }
 
+    componentWillReceiveProps(props) {
+        this.setState({
+            path: props.path
+        })
+    }
+
     // componentDidUpdate() {
     //     const socket = this.props.socket
     //     socket.send(JSON.stringify(this.canvasRef.current.toJSON()))
@@ -39,7 +45,9 @@ export default class Canvas extends React.Component {
                             lineColor='black'
                             lineWidth={3}
                             // onChange={(e) => console.log(this.canvasRef.current.toJSON())}
+                            // this.props.sendCanvasData(this)
                             onChange={(evt) => this.setState({path: this.canvasRef.current.toJSON()})}
+                            // value={this.state.path}
                     />
                 </div>
             </div>
