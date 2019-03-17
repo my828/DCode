@@ -49,6 +49,7 @@ func NewRabbitStore(mqAddress string, mqName string) *RabbitStore {
 
 // Consume reads from the rabbit message queue and returns a go channel
 func (rs *RabbitStore) Consume() <-chan amqp.Delivery {
+	log.Println("Entered RabbitStore Consume function...")
 	messages, err := rs.Channel.Consume(
 		rs.Queue.Name, // queue
 		"",            // consumer
@@ -79,9 +80,6 @@ func (rs *RabbitStore) Publish(message *Message) error {
 			ContentType: "application/json",
 			Body:        []byte(body),
 		})
-
-	// for testing
-	log.Printf(" [x] Sent %s", body)
 	failOnError(err, "Failed to publish a message")
 	return nil
 }
