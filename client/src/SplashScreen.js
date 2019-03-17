@@ -1,22 +1,13 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 
 class Splash extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            sessionID: this.props.sessionID,
+            sessionID: this.props.state.sessionID,
+            pageState: this.props.state
         }
-    }
-
-    componentDidMount() {
-        
-    }
-
-    componentWillReceiveProps(props) {
-        this.setState({
-            sessionID: props.sessionID
-        });
     }
 
     // onChange event handler for SessionID input field
@@ -29,6 +20,7 @@ class Splash extends React.Component {
     // handleSubmit handles clicks on the submit button after entering sessionID
     handleSubmit(evt) {
         let sessionID = this.state.formValue;
+        this.props.history.push(`/dcode/${sessionID}`);
         // request the sessionID end point again
         this.props.getSessionID(sessionID);
     }
@@ -45,9 +37,8 @@ class Splash extends React.Component {
             return res.text();
         })
         .then(body => {
-            // @TODO: change this
-            console.log(`Got sessionID: ${body}`);
             this.props.getSessionID(body);
+            this.props.history.push(`/dcode/${body}`);
         })
         .catch(err => {
             console.log(`Error: ${err}`);
@@ -55,23 +46,34 @@ class Splash extends React.Component {
     }
 
     render() {
+        let style = {
+            textAlign: "center"
+        };
+
         return(
-            <div style={{textAlign: "center"}}>
-                <header><b class="pb-5" style={{fontSize: "30px"}}>HELLO WELCOME TO DCODE :)</b></header>
+            <div className={"jumbotron jumbotron-fluid"} style={style}>
+                <header><b className="pb-5" style={{fontSize: "30px"}}>DCODE</b></header>
+                <Link to={`/dcode/${this.state.sessionID}`}>
+                    <button type="button" className="btn btn-primary" onClick={() => this.fetchSessionID()}>
+                        Start DCode
+                    </button>
+                </Link>
+
+                <h3>or</h3>
+
                 <form onSubmit={(evt) => this.handleSubmit()}>
                     <label>
-                    Enter SessionID: 
-                    <input type="text" value={this.state.value} onChange={this.handleChange}></input>
+                        Enter SessionID:
+                        <input type="text" value={this.state.value} onChange={this.handleChange}></input>
                     </label>
-                    <input type='submit' value="Submit"></input>
+                    
+                    <br/><br/>
+                    
+                    <button type='submit' value="Submit" className={"btn btn-outline-primary"}>Go to page</button>
                 </form>
-                <h3>or</h3>
-                <button type="button" class="btn btn-primary" onClick={() => this.fetchSessionID()}>
-                    Start DCode
-                </button>
             </div>
         )
     }
 }
 
-export default Splash;
+export default withRouter(Splash);
