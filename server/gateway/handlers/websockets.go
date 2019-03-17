@@ -46,10 +46,8 @@ func NewWebSocket(ctx *HandlerContext) *WebSocket {
 
 // WebSocketConnectionHandler manages new connections and data coming in and out of them
 func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Inside WebSocketHandler...")
 	sessionState := &SessionState{}
 	_, err := sessions.GetState(r, ws.Ctx.SessionsStore, sessionState)
-	log.Println("After session was checked: ID = ", sessionState.SessionID)
 	if err != nil {
 		log.Println("Page does not exist")
 		http.Error(w, "invalid page", http.StatusUnauthorized)
@@ -64,6 +62,5 @@ func (ws *WebSocket) WebSocketConnectionHandler(w http.ResponseWriter, r *http.R
 	}
 	// inserting connection to connection store
 	ws.Ctx.SocketStore.InsertConnection(conn, sessionState)
-	// ws.SS.InsertConnection(conn)
 	go ws.Ctx.SocketStore.Listen(sessionState, conn)
 }
