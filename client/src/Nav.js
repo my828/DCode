@@ -1,6 +1,7 @@
 import React from "react";
 import logo from './logo.svg'
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Link } from "react-router-dom";
+import './index.css';
 
 export default class Nav extends React.Component {
     render() {
@@ -9,14 +10,10 @@ export default class Nav extends React.Component {
             position: "relative",
             left: "0"
         }
-        let navstyle = {
-            backgroundColor: "gay",
-            padding: "10px"
-        }
         return (
-            <nav className="navbar navbar-expand-md mb-2 m-0 border-bottom justify-content-between" style={navstyle}>
-                <Link to="/dcode"><img src={logo} class="logo" alt="logo" style={logostyle} /></Link>
-                <button>Extend Session</button>
+            <nav className="navbar navbar-dark bg-dark">
+                <a href="/dcode"><span className={"lead text-white"}>DCode</span></a>
+                <button className={"btn btn-sm btn-outline-warning"}>Extend Session</button>
             </nav>
         )
     }
