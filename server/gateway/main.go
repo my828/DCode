@@ -15,14 +15,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Director is a starter http.Request that will be used in CustomDirector
-type Director func(r *http.Request)
-
-// CustomDirector modifies the request object before forwarding it to the microservice
-func CustomDirector() {
-	// @TODO: redirects to microservice
-}
-
 // HeartBeatHandler is a handler to check if the dcode server is alive
 func HeartBeatHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello from DCode!"))
@@ -56,15 +48,14 @@ func main() {
 	router.HandleFunc("/dcode/v1/{pageID}/extend", context.SessionExtensionHandler)
 	router.HandleFunc("/dcode/v1/{pageID}", context.GetPageHandler)
 
-	// go ss.write
-
 	// adds CORS middleware around handlers
 	cors := handlers.NewCORSHandler(router)
 
-	// messagesChannel := rabbitStore.Consume()
-	// if messagesChannel != nil {
-	// 	go socketStore.Notify(messagesChannel)
-	// }
+	messagesChannel := rabbitStore.Consume()
+	log.Println(messagesChannel)
+	if messagesChannel != nil {
+		go socketStore.Notify(messagesChannel)
+	}
 
 	log.Printf("Server is listening on port: %s\n", gatewayAddress)
 	log.Fatal(http.ListenAndServe(gatewayAddress, cors))
