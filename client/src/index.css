@@ -13,4 +13,25 @@ code {
     monospace;
 }
 
+.main-canvas-container {
+  width: 50%;
+}
 
+.main-editor-container {
+  width: 100%;
+}
+
+.main-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.editor {
+  background-color: #0A122A;
+  height: 100vh;
+}
+
+.canvas-clear {
+  float: right;
+  margin: 1%;
+}

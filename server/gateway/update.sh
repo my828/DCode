@@ -8,12 +8,12 @@ update() {
     docker "Removing existing decodeNetwork..."
     docker network rm decodeNetwork
 
-    docker rm rabbit
+    docker rm rabbit -f
     docker rm sessions -f
     docker rm dcodeGateway -f
 
     # pull most recent container images from Dockerhub
-    docker pull maryhuibregtse/dcode-gateway
+    docker pull harshiakkaraju/dcode-gateway
 
     docker network create dcodeNetwork
 
@@ -48,8 +48,9 @@ update() {
     -e REDISADDRESS=$REDISADDRESS \
     -e GATEWAYADDRESS=$GATEWAYADDRESS \
     -e RABBITADDRESS=$RABBITADDRESS \
+    -e RABBITNAME=$RABBITNAME \
     --network $NETWORK \
-    maryhuibregtse/dcode-gateway
+    harshiakkaraju/dcode-gateway
 
     echo "Done."
 }

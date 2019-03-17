@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"reflect"
 	"sync"
 
 	"DCode/server/gateway/sessions"
@@ -28,9 +29,8 @@ type SocketStore struct {
 	IPConnections IPConnections
 	Lock          sync.Mutex
 	RabbitStore   *RabbitStore
-	RedisStore  *sessions.RedisStore
+	RedisStore    *sessions.RedisStore
 }
-
 
 // NewSocketStore makes a new map and mutex to safely store websockets
 func NewSocketStore(rabbit *RabbitStore, redis *sessions.RedisStore) *SocketStore {
@@ -38,8 +38,8 @@ func NewSocketStore(rabbit *RabbitStore, redis *sessions.RedisStore) *SocketStor
 		Connections:   SessionConnections{},
 		IPConnections: IPConnections{},
 		Lock:          sync.Mutex{},
-		RabbitStore: rabbit,
-		RedisStore: redis,
+		RabbitStore:   rabbit,
+		RedisStore:    redis,
 	}
 }
 
@@ -58,51 +58,58 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 	connections = append(connections, connection)
 	s.Connections[sessionState.SessionID] = connections
 	s.Lock.Unlock()
-
-	// process incoming messages from the client
-	go s.Listen(sessionState)
 }
 
 // Listen receives messages from the websocket connection and populates the message queue
-func (s *SocketStore) Listen(sessionState *SessionState) error {
-	for {
-		connections := s.Connections[sessionState.SessionID]
-		for index, connection := range connections {
-			m := &Message{}
-			err := connection.ReadJSON(m)
-			if err != nil {
-				s.RemoveConnection(sessionState.SessionID, connection, index)
-			} else {
-				// save to redis
-				newSS := &SessionState{
-					m.SessionID,
-					m.Figures,
-					m.Code,
-				}
-				s.RedisStore.Save(m.SessionID, newSS)
-				// save message to message queue
-				if err := s.RabbitStore.Publish(m); err != nil {
-					return fmt.Errorf("Error unmarshalling userIDs %v", err)	
-				}
+func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
+	defer conn.Close()
+	defer s.RemoveConnection(sessionState.SessionID, conn)
 
+	for {
+		m := &Message{}
+		_, p, err := conn.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			break
+		} else {
+			err := json.Unmarshal(p, m)
+			if err != nil {
+				log.Println("error reading message from body", err)
 			}
+			// save to redis
+			newSS := &SessionState{
+				m.SessionID,
+				m.Figures,
+				m.Code,
+			}
+			s.RedisStore.Save(m.SessionID, newSS)
+			// save message to message queue
+			if err := s.RabbitStore.Publish(m); err != nil {
+				log.Println("error publishing to message queue", err)
+			}
+
 		}
 	}
 }
 
 // RemoveConnection thread-safe method for removing a connection
-func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, connection *websocket.Conn, connectionIndex int) {
+func (s *SocketStore) RemoveConnection(sessionID sessions.SessionID, connection *websocket.Conn) {
 	s.Lock.Lock()
 	err := connection.Close()
 	if err != nil {
 		log.Println("Error closing the connection")
 	}
+	var index int
 	connections := s.Connections[sessionID]
-	connections = append(connections[:connectionIndex], connections[connectionIndex+1])
+	for i, conn := range connections {
+		if reflect.DeepEqual(conn, connection) {
+			index = i
+		}
+	}
+	connections = append(connections[:index], connections[(index+1):]...)
 	s.Connections[sessionID] = connections
 	s.Lock.Unlock()
 }
-
 
 // Notify reads from Rabbit mq and writes to connections
 func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error {
@@ -111,26 +118,29 @@ func (s *SocketStore) Notify(msgs <-chan amqp.Delivery) error {
 		// this could be anything
 		message := &Message{}
 		if err := json.Unmarshal(msg.Body, message); err != nil {
+			log.Println("Error unmarshalling message body in Notify", err)
 			return fmt.Errorf("Error unmarshalling userIDs %v", err)
 		}
-		s.WriteToConnections(msg.Body, message.SessionID)
 		s.Lock.Unlock()
+		s.WriteToConnections(msg.Body, message.SessionID)
 	}
 	return nil
 }
 
 // WriteToConnections writes to all the active connections for the session id
 func (s *SocketStore) WriteToConnections(message []byte, sessionID sessions.SessionID) {
+	s.Lock.Lock()
+	defer s.Lock.Unlock()
+
 	var writeError error
-	connList := s.Connections[sessionID]
-	for index, conn := range connList {
+	// connList := s.Connections[sessionID]
+	for _, conn := range s.Connections[sessionID] {
 		writeError = conn.WriteMessage(websocket.TextMessage, message)
 		if writeError != nil {
-			s.RemoveConnection(sessionID, conn, index)
+			log.Println("Error in WriteToConnections", writeError)
+			s.RemoveConnection(sessionID, conn)
 			conn.Close()
 			return
 		}
 	}
 }
-
-
