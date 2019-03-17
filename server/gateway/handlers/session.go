@@ -26,7 +26,6 @@ const HeaderSessionID = "X-SessionID"
 func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		sessionID, err := sessions.NewSessionID(hc.SigningKey)
-		log.Println("generated id")
 		if err != nil {
 			log.Println("error generating new id: ", err)
 			http.Error(w, "error creating a new session", http.StatusInternalServerError)
@@ -35,7 +34,6 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		sessionState := &SessionState{
 			SessionID: sessionID,
 		}
-		log.Println("here...")
 		_, err = sessions.SaveSession(sessionID, sessionState, hc.SessionsStore)
 		if err != nil {
 			log.Println("error saving: ", err)
@@ -43,7 +41,6 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 			return
 		}
 		w.Header().Add(HeaderSessionID, string(sessionID))
-		log.Println("Header: ", w.Header().Get(HeaderSessionID))
 		w.Write([]byte(sessionID))
 	} else {
 		http.Error(w, "invalid method", http.StatusMethodNotAllowed)
