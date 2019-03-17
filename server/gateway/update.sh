@@ -48,6 +48,7 @@ update() {
     -e REDISADDRESS=$REDISADDRESS \
     -e GATEWAYADDRESS=$GATEWAYADDRESS \
     -e RABBITADDRESS=$RABBITADDRESS \
+    -e RABBITNAME=$RABBITNAME \
     --network $NETWORK \
     harshiakkaraju/dcode-gateway
 
