@@ -33,7 +33,10 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		}
 		sessionState := &SessionState{
 			SessionID: sessionID,
+			Figures:   "",
+			Code:      "",
 		}
+
 		_, err = sessions.SaveSession(sessionID, sessionState, hc.SessionsStore)
 		if err != nil {
 			log.Println("error saving: ", err)
@@ -64,6 +67,8 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 			Figures:   sessionState.Figures,
 			Code:      sessionState.Code,
 		}
+
+		log.Print("NEW MESSAGE: ", message.Code, message.Figures)
 		hc.SocketStore.RabbitStore.Publish(message)
 
 		w.Header().Add(HeaderSessionID, string(sessionState.SessionID))

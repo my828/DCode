@@ -13,7 +13,7 @@ update() {
     docker rm dcodeGateway -f
 
     # pull most recent container images from Dockerhub
-    docker pull harshiakkaraju/dcode-gateway
+    docker pull maryhuibregtse/dcode-gateway
 
     docker network create dcodeNetwork
 
@@ -50,7 +50,7 @@ update() {
     -e RABBITADDRESS=$RABBITADDRESS \
     -e RABBITNAME=$RABBITNAME \
     --network $NETWORK \
-    harshiakkaraju/dcode-gateway
+    maryhuibregtse/dcode-gateway
 
     echo "Done."
 }

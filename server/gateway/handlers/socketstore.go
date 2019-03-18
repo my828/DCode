@@ -62,7 +62,7 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 
 // Listen receives messages from the websocket connection and populates the message queue
 func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
-	defer conn.Close()
+	// defer conn.Close()
 	defer s.RemoveConnection(sessionState.SessionID, conn)
 
 	for {
@@ -77,14 +77,48 @@ func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
 				log.Println("error reading message from body", err)
 			}
 			// save to redis
-			newSS := &SessionState{
-				m.SessionID,
-				m.Figures,
-				m.Code,
+			newSS := &SessionState{}
+			newMsg := &Message{}
+			if err := s.RedisStore.Get(m.SessionID, newSS); err != nil {
+				log.Print("No session exists: ", err)
+
+
 			}
-			s.RedisStore.Save(m.SessionID, newSS)
+
+			log.Println(newSS)
+
+			if newSS.Code == "" && newSS.Figures == "" {
+				log.Println("Drawing is emty, setting to: ", m.SessionID, m.Figures, m.Code)
+				newSS = &SessionState{
+					m.SessionID,
+					m.Figures,
+					m.Code,
+				}
+				newMsg = &Message{
+					m.SessionID,
+					m.Figures,
+					m.Code,
+				}
+				s.RedisStore.Save(m.SessionID, newSS)
+			} else {
+				newMsg = &Message{
+					newSS.SessionID,
+					newSS.Figures,
+					newSS.Code,
+				}
+			}
+
+			// check if id exist in keys of redis
+			// if exist, update
+			// newSS = &SessionState{
+			// 	m.SessionID,
+			// 	m.Figures,
+			// 	m.Code,
+			// }
+			log.Print("SESSION BEING SAVED: ", newMsg.Figures, newMsg.Code)
+
 			// save message to message queue
-			if err := s.RabbitStore.Publish(m); err != nil {
+			if err := s.RabbitStore.Publish(newMsg); err != nil {
 				log.Println("error publishing to message queue", err)
 			}
 

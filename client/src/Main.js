@@ -9,10 +9,13 @@ class Main extends React.Component {
     componentDidMount() {
         let socket = this.props.getSocket();
         if (!socket) {
+            console.log("should not be in here")
             let path = window.location.href;
             let components = path.split("/");
             let sessionID = components[components.length - 1];
             this.props.initializeSocket(sessionID);
+            console.log(sessionID)
+
         }
     }
 
