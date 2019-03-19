@@ -85,7 +85,7 @@ func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
 				m.Figures,
 				m.Code,
 			}
-			log.Print("SESSION BEING SAVED: ", newSS.Figures, newSS.Code)
+			log.Print("SESSION BEING UPDATED FROM WEBSOCKET: ", newSS.Code)
 			s.RedisStore.Save(m.SessionID, newSS)
 			// save message to message queue
 			if err := s.RabbitStore.Publish(m); err != nil {
