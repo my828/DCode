@@ -22,13 +22,14 @@ export default class App extends React.Component {
     });
   }
 
+  // updates page state in App.js so it can be sent to
+  // other active connections (server-side logic)
   handleEditorChange(code) {
     let state = this.state.pageState;
     state.code = code;
     this.props.updateState(state);
   }
 
-  state = { code }
   render() {
     
     return (

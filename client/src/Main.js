@@ -6,6 +6,8 @@ import { withRouter } from "react-router-dom";
 import './index.css';
 
 class Main extends React.Component {
+    // when someone opens the link get the sessionID
+    // from the url
     componentDidMount() {
         let socket = this.props.getSocket();
         if (!socket) {
