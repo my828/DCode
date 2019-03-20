@@ -20,6 +20,7 @@ class App extends Component {
     this.socket = null;
   }
 
+  // initializes the websocket connection -- once we have access to the sessionID
   initializeSocket = (sessionID) => {
     if (sessionID) {
       const WSS_ENDPOINT = `ws://localhost:4000/ws`;
@@ -53,13 +54,15 @@ class App extends Component {
       }
     }
   }
-
+  
+  // returns the websocket connection if it exists
   getSocket = () => {
     if (this.socket) {
       return this.socket;
     }
   }
 
+  // makes a http request to the api to make sure that sessionID is valid
   getSessionID = (sessionID) => {
       const DCODE_API = `http://localhost:4000/dcode`;
 
@@ -83,6 +86,7 @@ class App extends Component {
       });
   }
 
+  // passed to Editor and Canvas -- invoked when the state changes
   updatePageState = (page) => {
     this.setState({
       pageState: page

@@ -76,12 +76,12 @@ func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
 			if err != nil {
 				log.Println("error reading message from body", err)
 			}
-			// save to redis
 			newSS := &SessionState{
 				m.SessionID,
 				m.Figures,
 				m.Code,
 			}
+
 			s.RedisStore.Save(m.SessionID, newSS)
 			// save message to message queue
 			if err := s.RabbitStore.Publish(m); err != nil {
