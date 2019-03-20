@@ -54,7 +54,7 @@ class App extends Component {
       }
     }
   }
-
+  
   // returns the websocket connection if it exists
   getSocket = () => {
     if (this.socket) {

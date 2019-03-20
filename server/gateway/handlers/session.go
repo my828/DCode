@@ -34,10 +34,7 @@ func (hc *HandlerContext) NewSessionHandler(w http.ResponseWriter, r *http.Reque
 		}
 		sessionState := &SessionState{
 			SessionID: sessionID,
-			Figures:   "",
-			Code:      "",
 		}
-
 		_, err = sessions.SaveSession(sessionID, sessionState, hc.SessionsStore)
 		if err != nil {
 			log.Println("error saving: ", err)
@@ -68,17 +65,10 @@ func (hc *HandlerContext) GetPageHandler(w http.ResponseWriter, r *http.Request)
 			Figures:   sessionState.Figures,
 			Code:      sessionState.Code,
 		}
-
-		log.Print("NEW SESSION STATE GRABBED FROM REDIS STORE IN API CALL: ", message.Code)
 		hc.SocketStore.RabbitStore.Publish(message)
 
 		w.Header().Add(HeaderSessionID, string(sessionState.SessionID))
 		w.Write([]byte(sessionState.SessionID))
-		if err := json.NewEncoder(w).Encode(message); err != nil {
-			http.Error(w, fmt.Sprintf("Error encoding JSON: %v", err),
-				http.StatusInternalServerError)
-			return
-		}
 	} else {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return

@@ -30,6 +30,7 @@ export default class App extends React.Component {
     this.props.updateState(state);
   }
 
+  state = { code }
   render() {
     
     return (

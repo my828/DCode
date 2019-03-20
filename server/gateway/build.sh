@@ -5,7 +5,7 @@ build () {
     GOOS=linux go build
 
     echo "Building Docker container for gateway..."
-    docker build -t maryhuibregtse/dcode-gateway .
+    docker build -t my828/dcode-gateway .
 
     echo "Cleaning Go executable for Linux"
     go clean

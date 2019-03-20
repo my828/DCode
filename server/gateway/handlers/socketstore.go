@@ -62,7 +62,7 @@ func (s *SocketStore) InsertConnection(connection *websocket.Conn, sessionState 
 
 // Listen receives messages from the websocket connection and populates the message queue
 func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
-	// defer conn.Close()
+	defer conn.Close()
 	defer s.RemoveConnection(sessionState.SessionID, conn)
 
 	for {
@@ -76,16 +76,12 @@ func (s *SocketStore) Listen(sessionState *SessionState, conn *websocket.Conn) {
 			if err != nil {
 				log.Println("error reading message from body", err)
 			}
-			// save to redis
-			
-			// check if id exist in keys of redis
-			// if exist, update 
 			newSS := &SessionState{
 				m.SessionID,
 				m.Figures,
 				m.Code,
 			}
-			log.Print("SESSION BEING UPDATED FROM WEBSOCKET: ", newSS.Code)
+
 			s.RedisStore.Save(m.SessionID, newSS)
 			// save message to message queue
 			if err := s.RabbitStore.Publish(m); err != nil {
